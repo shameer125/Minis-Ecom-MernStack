@@ -90,6 +90,7 @@ export default function ContactPage() {
                   className="input-field resize-none"
                 />
               </div>
+
               <button
                 type="submit"
                 disabled={loading}
@@ -107,11 +108,13 @@ export default function ContactPage() {
             <div className="space-y-5 mb-10">
               {contactInfo.map(({ icon: Icon, label, value }) => (
                 <div key={label} className="flex items-start gap-4">
-                  <div className="w-10 h-10 bg-primary-50 flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 bg-primary-50 flex items-center
+                   justify-center shrink-0">
                     <Icon className="text-primary-600" size={18} />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400 uppercase tracking-wider font-medium">{label}</p>
+                    <p className="text-xs text-gray-400 uppercase tracking-wider
+                     font-medium">{label}</p>
                     <p className="text-sm text-dark mt-0.5">{value}</p>
                   </div>
                 </div>
@@ -128,7 +131,8 @@ export default function ContactPage() {
                   'Do you offer free shipping?',
                   'How can I change my order?',
                 ].map(q => (
-                  <div key={q} className="flex items-center gap-2 text-gray-600 hover:text-primary-600 cursor-pointer transition-colors">
+                  <div key={q} className="flex items-center gap-2 text-gray-600
+                   hover:text-primary-600 cursor-pointer transition-colors">
                     <span className="text-primary-400">→</span> {q}
                   </div>
                 ))}
