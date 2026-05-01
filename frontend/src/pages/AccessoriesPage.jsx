@@ -41,7 +41,8 @@ export default function AccessoriesPage() {
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-black/40" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-white text-center">
+        <div className="absolute inset-0 flex flex-col items-center justify-center
+        text-white text-center">
           <p className="text-xs tracking-widest uppercase text-amber-300 mb-2">Collection</p>
           <h1 className="font-display text-5xl md:text-6xl font-bold">{activeSub?.label || 'Accessories'}</h1>
           <p className="mt-2 text-gray-200 text-sm">{activeSub?.desc || 'The finishing touch to every outfit'}</p>
