@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-body text-gray-800 bg-white;
+  }
+  h1, h2, h3 {
+    @apply font-display;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium px-6 py-3 rounded-none transition-all duration-300 tracking-wider uppercase text-sm;
+  }
+  .btn-outline {
+    @apply border border-primary-600 text-primary-600 hover:bg-primary-600 hover:text-white font-medium px-6 py-3 rounded-none transition-all duration-300 tracking-wider uppercase text-sm;
+  }
+  .btn-dark {
+    @apply bg-dark hover:bg-gray-800 text-white font-medium px-6 py-3 rounded-none transition-all duration-300 tracking-wider uppercase text-sm;
+  }
+  .input-field {
+    @apply w-full border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:border-primary-500 transition-colors;
+  }
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+  }
+  .section-title {
+    @apply font-display text-3xl md:text-4xl text-dark mb-2;
+  }
+  .badge {
+    @apply inline-block bg-primary-600 text-white text-xs px-2 py-1 font-medium tracking-wider uppercase;
+  }
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: #db2777; }
+
+/* Page transitions */
+.page-enter { animation: slideUp 0.4s ease-out; }
