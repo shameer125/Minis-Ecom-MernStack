@@ -171,7 +171,8 @@ export default function CheckoutPage() {
                 ].map((method) => (
                   <label
                     key={method}
-                    className="flex items-center gap-3 cursor-pointer p-3 border hover:border-primary-300"
+                    className="flex items-center gap-3 cursor-pointer p-3 border
+                     hover:border-primary-300"
                     style={{
                       borderColor:
                         form.paymentMethod === method ? "#db2777" : undefined,
