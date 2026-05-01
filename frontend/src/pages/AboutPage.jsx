@@ -57,11 +57,13 @@ export default function AboutPage() {
             <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400&auto=format&fit=crop" alt="" className="w-full h-56 object-cover mt-8" />
           </div>
         </div>
+
       </section>
 
       {/* Stats */}
       <section className="bg-dark py-14">
-        <div className="container-custom grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+        <div className="container-custom grid grid-cols-2 md:grid-cols-4
+        gap-8 text-center">
           {stats.map(({ label, value, icon: Icon }) => (
             <div key={label}>
               <Icon className="mx-auto text-primary-400 mb-3" size={28} />
