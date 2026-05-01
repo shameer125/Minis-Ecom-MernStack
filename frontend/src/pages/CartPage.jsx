@@ -20,14 +20,18 @@ export default function CartPage() {
 
   return (
     <div className="container-custom py-8 animate-fade-in">
-      <h1 className="font-display text-3xl md:text-4xl mb-8">Shopping Cart ({cartItems.length})</h1>
+      <h1 className="font-display text-3xl md:text-4xl mb-8">Shopping Cart
+        ({cartItems.length})</h1>
       <div className="grid lg:grid-cols-3 gap-8">
         {/* Cart items */}
         <div className="lg:col-span-2 space-y-4">
           {cartItems.map(item => (
-            <div key={`${item._id}-${item.selectedSize}-${item.selectedColor}`} className="flex gap-4 border border-gray-100 p-4">
-              <Link to={`/product/${item.slug}`} className="w-24 h-28 shrink-0 overflow-hidden bg-gray-50">
-                <img src={item.images?.[0]} alt={item.name} className="w-full h-full object-cover" />
+            <div key={`${item._id}-${item.selectedSize}-${item.selectedColor}`}
+              className="flex gap-4 border border-gray-100 p-4">
+              <Link to={`/product/${item.slug}`} className="w-24 h-28 shrink-0
+               overflow-hidden bg-gray-50">
+                <img src={item.images?.[0]} alt={item.name} className="w-full h-full
+                 object-cover" />
               </Link>
               <div className="flex-1 min-w-0">
                 <Link to={`/product/${item.slug}`} className="font-medium text-dark hover:text-primary-600 transition-colors line-clamp-1">
