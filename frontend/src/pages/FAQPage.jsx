@@ -64,8 +64,10 @@ export default function FAQPage() {
     <div className="animate-fade-in">
       {/* Hero */}
       <div className="bg-gray-50 py-14 text-center border-b">
-        <p className="text-xs tracking-widest uppercase text-primary-600 mb-2">Help Center</p>
-        <h1 className="font-display text-4xl md:text-5xl text-dark">Frequently Asked Questions</h1>
+        <p className="text-xs tracking-widest uppercase text-primary-600 mb-2">
+          Help Center</p>
+        <h1 className="font-display text-4xl md:text-5xl text-dark">
+          Frequently Asked Questions</h1>
         <p className="text-gray-500 mt-3 max-w-md mx-auto text-sm">
           Find answers to common questions about orders, shipping, returns, and more.
         </p>
@@ -75,7 +77,8 @@ export default function FAQPage() {
         <div className="max-w-3xl mx-auto">
           {faqs.map(({ category, items }) => (
             <div key={category} className="mb-10">
-              <h2 className="font-display text-2xl text-dark mb-4 pb-2 border-b-2 border-primary-200">{category}</h2>
+              <h2 className="font-display text-2xl text-dark mb-4 pb-2 
+              border-b-2 border-primary-200">{category}</h2>
               <div>
                 {items.map(item => <FAQItem key={item.q} {...item} />)}
               </div>
