@@ -69,9 +69,11 @@ export default function KidsPage() {
               {subcategories.map(s => (
                 <Link key={s.slug} to={`/shop/kids?subcategory=${s.slug}`} className="group text-center">
                   <div className="aspect-square overflow-hidden mb-2">
-                    <img src={s.img} alt={s.label} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                    <img src={s.img} alt={s.label} className="w-full h-full object-cover transition-transform
+                    duration-500 group-hover:scale-110" />
                   </div>
-                  <p className="text-sm font-medium text-dark group-hover:text-primary-600 transition-colors">{s.label}</p>
+                  <p className="text-sm font-medium text-dark group-hover:text-primary-600
+                  transition-colors">{s.label}</p>
                 </Link>
               ))}
             </div>
@@ -83,7 +85,8 @@ export default function KidsPage() {
             <h2 className="font-display text-2xl text-dark">
               {activeSub ? activeSub.label : 'All Kids'} <span className="text-gray-400 text-lg">({products.length})</span>
             </h2>
-            <Link to="/shop/kids" className="text-sm text-primary-600 hover:underline flex items-center gap-1">View All <FiArrowRight size={14} /></Link>
+            <Link to="/shop/kids" className="text-sm text-primary-600 hover:underline flex items-center gap-1">
+              View All <FiArrowRight size={14} /></Link>
           </div>
           {loading ? <PageLoader /> : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
@@ -94,7 +97,8 @@ export default function KidsPage() {
             </div>
           )}
           <div className="text-center mt-8">
-            <Link to="/shop/kids" className="btn-outline inline-block">See All Kids' Products</Link>
+            <Link to="/shop/kids" className="btn-outline inline-block">
+              See All Kids' Products</Link>
           </div>
         </div>
       </div>
