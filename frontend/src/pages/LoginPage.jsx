@@ -18,7 +18,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center py-12 animate-fade-in">
+    <div className="min-h-[80vh] flex items-center justify-center py-12
+    animate-fade-in">
       <div className="w-full max-w-md px-6">
         <div className="text-center mb-10">
           <h1 className="font-display text-4xl text-dark mb-2">Welcome Back</h1>
