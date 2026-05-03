@@ -83,18 +83,21 @@ export default function MenPage() {
             <h2 className="font-display text-2xl text-dark">
               {activeSub ? activeSub.label : "All Men's"} <span className="text-gray-400 text-lg">({products.length})</span>
             </h2>
-            <Link to="/shop/men" className="text-sm text-primary-600 hover:underline flex items-center gap-1">View All <FiArrowRight size={14} /></Link>
+            <Link to="/shop/men" className="text-sm text-primary-600 hover:underline flex items-center gap-1">
+            View All <FiArrowRight size={14} /></Link>
           </div>
           {loading ? <PageLoader /> : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
               {products.length === 0
-                ? <p className="col-span-4 text-center py-16 text-gray-400">No products found in this category yet.</p>
+                ? <p className="col-span-4 text-center py-16 text-gray-400">
+                No products found in this category yet.</p>
                 : products.map(p => <ProductCard key={p._id} product={p} />)
               }
             </div>
           )}
           <div className="text-center mt-8">
-            <Link to="/shop/men" className="btn-outline inline-block">See All Men's Products</Link>
+            <Link to="/shop/men" className="btn-outline inline-block">
+            See All Men's Products</Link>
           </div>
         </div>
       </div>
