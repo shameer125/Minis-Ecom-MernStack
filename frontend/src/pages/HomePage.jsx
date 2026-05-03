@@ -111,7 +111,8 @@ export default function HomePage() {
       {/* Category Banners */}
       <section className="py-14 container-custom">
         <div className="text-center mb-10">
-          <p className="text-xs tracking-widest uppercase text-primary-600 mb-2">Browse by Category</p>
+          <p className="text-xs tracking-widest uppercase text-primary-600 mb-2">
+            Browse by Category</p>
           <h2 className="section-title">Shop The Collection</h2>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -121,7 +122,8 @@ export default function HomePage() {
               <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors duration-300" />
               <div className="absolute inset-0 flex flex-col items-center justify-end pb-6">
                 <h3 className="font-display text-white text-2xl font-semibold">{cat.label}</h3>
-                <span className="text-white/80 text-xs tracking-widest uppercase mt-1 group-hover:text-primary-300 transition-colors">Shop Now →</span>
+                <span className="text-white/80 text-xs tracking-widest uppercase 
+                mt-1 group-hover:text-primary-300 transition-colors">Shop Now →</span>
               </div>
             </Link>
           ))}
@@ -133,10 +135,12 @@ export default function HomePage() {
         <div className="container-custom">
           <div className="flex items-end justify-between mb-10">
             <div>
-              <p className="text-xs tracking-widest uppercase text-primary-600 mb-2">Hand-Picked For You</p>
+              <p className="text-xs tracking-widest uppercase text-primary-600 
+              mb-2">Hand-Picked For You</p>
               <h2 className="section-title">Featured Products</h2>
             </div>
-            <Link to="/shop" className="text-sm text-dark hover:text-primary-600 transition-colors flex items-center gap-1 font-medium">
+            <Link to="/shop" className="text-sm text-dark hover:text-primary-600
+             transition-colors flex items-center gap-1 font-medium">
               View All <FiArrowRight size={14} />
             </Link>
           </div>
