@@ -49,10 +49,12 @@ export default function OrdersPage() {
               </div>
               <div className="flex gap-2">
                 {order.orderItems.slice(0, 4).map((item, i) => (
-                  <img key={i} src={item.image} alt={item.name} className="w-12 h-14 object-cover bg-gray-100" />
+                  <img key={i} src={item.image} alt={item.name} className="w-12 h-14 object-cover
+                  bg-gray-100" />
                 ))}
                 {order.orderItems.length > 4 && (
-                  <div className="w-12 h-14 bg-gray-100 flex items-center justify-center text-xs text-gray-400">
+                  <div className="w-12 h-14 bg-gray-100 flex items-center justify-center
+                  text-xs text-gray-400">
                     +{order.orderItems.length - 4}
                   </div>
                 )}
