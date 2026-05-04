@@ -97,17 +97,6 @@ npm run dev
 Frontend will run at:
 👉 [http://localhost:5173](http://localhost:5173)
 
----
-
-## 🔐 Admin Access
-
-URL:
-👉 [http://localhost:5173/admin](http://localhost:5173/admin)
-
-**Credentials:**
-
-* Email: [admin@minis.com](mailto:admin@minis.com)
-* Password: admin123
 
 ---
 
