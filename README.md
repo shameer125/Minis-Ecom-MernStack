@@ -1,82 +1,171 @@
-# MINIS E-Commerce — MERN Stack
+# 🛍️ MINIS E-Commerce — Full Stack MERN Application
 
-## Project Structure
+A modern, full-featured e-commerce web application built using the MERN stack (MongoDB, Express.js, React, Node.js). This project demonstrates real-world functionality including authentication, admin dashboard, product management, and order processing.
+
+---
+
+## 🚀 Features
+
+### 👤 User Features
+
+* User registration & login (JWT authentication)
+* Browse products by category
+* Add to cart & wishlist
+* Secure checkout process
+* Order history tracking
+
+### 🛠️ Admin Features
+
+* Admin dashboard with stats & revenue overview
+* Manage products (Create, Read, Update, Delete)
+* Manage users
+* View and update order status
+
+---
+
+## 🧱 Tech Stack
+
+**Frontend:**
+
+* React (Vite)
+* Tailwind CSS
+* React Router
+* Context API
+
+**Backend:**
+
+* Node.js
+* Express.js
+* MongoDB (Mongoose)
+* JWT Authentication
+
+---
+
+## 📁 Project Structure
+
 ```
 minis-ecom/
-├── backend/      ← Node.js + Express + MongoDB
-└── frontend/     ← React + Tailwind CSS
+├── backend/      # Node.js + Express + MongoDB API
+└── frontend/     # React + Tailwind CSS client
 ```
 
 ---
 
-## STEP 1 — Setup Backend
+## ⚙️ Backend Setup
 
 ```bash
 cd minis-ecom/backend
 npm install
 ```
 
-Create a `.env` file inside `backend/` folder:
+Create a `.env` file in the `backend/` folder:
+
 ```
 PORT=5000
-MONGO_URI=mongodb+srv://YOUR_USER:YOUR_PASS@cluster0.xxxxx.mongodb.net/minis-ecom?retryWrites=true&w=majority
-JWT_SECRET=minis_secret_key_123
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
 NODE_ENV=development
 ```
 
-Seed the database (run ONCE):
+### 🌱 Seed Database (Run Once)
+
 ```bash
 node config/seed.js
 ```
 
-Start the backend:
+### ▶️ Run Backend
+
 ```bash
 npm run dev
 ```
-✅ You should see: 🚀 Server running on port 5000
+
+Server will run at:
+👉 [http://localhost:5000](http://localhost:5000)
 
 ---
 
-## STEP 2 — Setup Frontend
+## 💻 Frontend Setup
 
-Open a NEW terminal:
+Open a new terminal:
+
 ```bash
 cd minis-ecom/frontend
 npm install
 npm run dev
 ```
-✅ Open: http://localhost:5173
+
+Frontend will run at:
+👉 [http://localhost:5173](http://localhost:5173)
 
 ---
 
-## STEP 3 — Access Admin Dashboard
+## 🔐 Admin Access
 
-URL: http://localhost:5173/admin
+URL:
+👉 [http://localhost:5173/admin](http://localhost:5173/admin)
 
-Login credentials:
-- Email:    admin@minis.com
-- Password: admin123
+**Credentials:**
 
----
-
-## Admin Dashboard Pages
-- /admin              → Dashboard (revenue chart, stats, orders)
-- /admin/products     → Add / Edit / Delete products
-- /admin/orders       → View & update order status
-- /admin/users        → Manage customers
+* Email: [admin@minis.com](mailto:admin@minis.com)
+* Password: admin123
 
 ---
 
-## Store Pages
-- /                   → Home
-- /shop               → All products
-- /shop/women         → Women's category
-- /shop/men           → Men's category
-- /product/:slug      → Product detail
-- /cart               → Shopping cart
-- /checkout           → Place order (login required)
-- /wishlist           → Saved items
-- /orders             → My orders (login required)
-- /contact            → Contact form
-- /login              → Sign in
-- /register           → Create account
+## 📊 Admin Dashboard Routes
+
+| Route           | Description                        |
+| --------------- | ---------------------------------- |
+| /admin          | Dashboard (stats, revenue, charts) |
+| /admin/products | Manage products                    |
+| /admin/orders   | Manage orders                      |
+| /admin/users    | Manage users                       |
+
+---
+
+## 🛒 Store Routes
+
+| Route          | Description               |
+| -------------- | ------------------------- |
+| /              | Home page                 |
+| /shop          | All products              |
+| /shop/women    | Women's category          |
+| /shop/men      | Men's category            |
+| /product/:slug | Product details           |
+| /cart          | Shopping cart             |
+| /checkout      | Checkout (login required) |
+| /wishlist      | Saved items               |
+| /orders        | User orders               |
+| /contact       | Contact page              |
+| /login         | Login                     |
+| /register      | Register                  |
+
+---
+
+## 🌟 Highlights for Recruiters
+
+* Full-stack MERN architecture
+* Clean folder structure & scalable design
+* Authentication & protected routes
+* Real-world e-commerce logic
+* Admin dashboard with CRUD operations
+
+---
+
+## 📦 Future Improvements
+
+* Payment gateway integration (Stripe)
+* Product reviews & ratings
+* Advanced filtering & search
+* Performance optimization
+
+---
+
+## 🧑‍💻 Author
+
+**Shameer Ali**
+
+---
+
+## 📄 License
+
+This project is open-source and available for learning purposes.
