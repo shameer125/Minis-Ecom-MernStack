@@ -30,7 +30,8 @@ export default function OrderDetailPage() {
   if (error) return (
     <div className="container-custom py-20 text-center">
       <h2 className="font-display text-2xl mb-4">{error}</h2>
-      <Link to="/orders" className="btn-primary">Back to Orders</Link>
+      <Link to="/orders" className="btn-primary">
+      Back to Orders</Link>
     </div>
   );
 
@@ -41,7 +42,8 @@ export default function OrderDetailPage() {
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-4 mb-8">
         <div>
-          <Link to="/orders" className="text-sm text-gray-400 hover:text-primary-600 transition-colors mb-2 block">← Back to Orders</Link>
+          <Link to="/orders" className="text-sm text-gray-400
+          hover:text-primary-600 transition-colors mb-2 block">← Back to Orders</Link>
           <h1 className="font-display text-3xl">Order Details</h1>
           <p className="text-sm text-gray-500 mt-1">
             #{order._id.slice(-8).toUpperCase()} · Placed on {new Date(order.createdAt).toLocaleDateString('en-PK', { dateStyle: 'long' })}
