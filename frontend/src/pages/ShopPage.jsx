@@ -70,7 +70,8 @@ export default function ShopPage() {
               <h4 className="font-semibold text-sm tracking-wider uppercase mb-3">Category</h4>
               <ul className="space-y-2">
                 <li>
-                  <Link to="/shop" className={`text-sm hover:text-primary-600 transition-colors ${!category ? 'text-primary-600 font-medium' : 'text-gray-600'}`}>
+                  <Link to="/shop" className={`text-sm hover:text-primary-600
+                    ransition-colors ${!category ? 'text-primary-600 font-medium' : 'text-gray-600'}`}>
                     All Products ({total})
                   </Link>
                 </li>
@@ -85,7 +86,8 @@ export default function ShopPage() {
             </div>
 
             <div>
-              <h4 className="font-semibold text-sm tracking-wider uppercase mb-3">Price Range</h4>
+              <h4 className="font-semibold text-sm tracking-wider uppercase mb-3">
+                Price Range</h4>
               <div className="flex gap-2 items-center">
                 <input
                   type="number"
