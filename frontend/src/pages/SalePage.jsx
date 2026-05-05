@@ -27,8 +27,10 @@ export default function SalePage() {
           backgroundSize: '20px 20px'
         }} />
         <div className="relative">
-          <p className="text-primary-300 text-xs tracking-widest uppercase mb-3">Limited Time</p>
-          <h1 className="font-display text-6xl md:text-8xl font-bold text-white">SALE</h1>
+          <p className="text-primary-300 text-xs tracking-widest uppercase mb-3">
+          Limited Time</p>
+          <h1 className="font-display text-6xl md:text-8xl font-bold text-white">
+          SALE</h1>
           <p className="text-gray-300 mt-3 text-lg">Up to 50% off on selected styles</p>
           <div className="flex justify-center gap-6 mt-6">
             {['Free Shipping', 'Easy Returns', 'Authentic Products'].map(t => (
