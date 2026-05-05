@@ -22,14 +22,16 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center py-12 animate-fade-in">
+    <div className="min-h-[80vh] flex items-center justify-center
+    py-12 animate-fade-in">
       <div className="w-full max-w-md px-6">
         <div className="text-center mb-10">
           <h1 className="font-display text-4xl text-dark mb-2">Create Account</h1>
           <p className="text-gray-500 text-sm">Join MINIS for exclusive offers</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && <div className="bg-red-50 text-red-600 text-sm px-4 py-3 border border-red-200">{error}</div>}
+          {error && <div className="bg-red-50 text-red-600 text-sm px-4 
+          py-3 border border-red-200">{error}</div>}
           <div>
             <label className="block text-sm font-medium mb-1">Full Name</label>
             <input type="text" required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="input-field" placeholder="Jane Doe" />
