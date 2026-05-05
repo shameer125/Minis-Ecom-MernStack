@@ -81,7 +81,8 @@ export default function ProductDetailPage() {
         <nav className="text-xs text-gray-400 mb-8 flex items-center gap-2">
           <Link to="/" className="hover:text-primary-600">Home</Link>
           <span>/</span>
-          <Link to={`/shop/${product.category}`} className="hover:text-primary-600 capitalize">{product.category}</Link>
+          <Link to={`/shop/${product.category}`} className="hover:text-primary-600
+          capitalize">{product.category}</Link>
           <span>/</span>
           <span className="text-dark">{product.name}</span>
         </nav>
@@ -102,7 +103,8 @@ export default function ProductDetailPage() {
                   <button
                     key={i}
                     onClick={() => setSelectedImage(i)}
-                    className={`w-20 h-20 overflow-hidden border-2 transition-colors ${selectedImage === i ? 'border-primary-500' : 'border-transparent'}`}
+                    className={`w-20 h-20 overflow-hidden border-2 transition-colors
+                      ${selectedImage === i ? 'border-primary-500' : 'border-transparent'}`}
                   >
                     <img src={img} alt="" className="w-full h-full object-cover" />
                   </button>
