@@ -44,8 +44,10 @@ export default function WishlistPage() {
 
               {/* Info */}
               <div className="pt-3">
-                <p className="text-xs text-gray-400 uppercase tracking-widest mb-1">{product.subcategory || product.category}</p>
-                <Link to={`/product/${product.slug}`} className="text-sm font-medium text-dark hover:text-primary-600 transition-colors line-clamp-1 block">
+                <p className="text-xs text-gray-400 uppercase tracking-widest mb-1">
+                  {product.subcategory || product.category}</p>
+                <Link to={`/product/${product.slug}`} className="text-sm font-medium
+                text-dark hover:text-primary-600 transition-colors line-clamp-1 block">
                   {product.name}
                 </Link>
                 <div className="flex items-center gap-2 mt-1">
@@ -60,14 +62,16 @@ export default function WishlistPage() {
                   <button
                     onClick={() => addToCart(product, 1, product.sizes?.[0], product.colors?.[0])}
                     disabled={product.stock === 0}
-                    className="flex-1 bg-dark text-white py-2 text-xs font-medium tracking-wider uppercase flex items-center justify-center gap-1 hover:bg-primary-700 transition-colors disabled:opacity-50"
+                    className="flex-1 bg-dark text-white py-2 text-xs font-medium tracking-wider
+                    uppercase flex items-center justify-center gap-1 hover:bg-primary-700 transition-colors disabled:opacity-50"
                   >
                     <FiShoppingBag size={12} />
                     {product.stock === 0 ? 'Sold Out' : 'Add to Cart'}
                   </button>
                   <button
                     onClick={() => toggleWishlist(product)}
-                    className="w-9 h-9 flex items-center justify-center border border-gray-300 text-red-400 hover:bg-red-50 hover:border-red-300 transition-colors"
+                    className="w-9 h-9 flex items-center justify-center border border-gray-300 
+                    text-red-400 hover:bg-red-50 hover:border-red-300 transition-colors"
                     title="Remove from wishlist"
                   >
                     <FiTrash2 size={14} />
