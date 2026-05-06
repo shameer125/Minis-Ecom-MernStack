@@ -10,8 +10,10 @@ export default function Footer() {
           <h3 className="font-display text-2xl text-white mb-2">Join the MINIS Community</h3>
           <p className="text-pink-100 text-sm mb-6">Subscribe for exclusive offers, new arrivals and style inspiration</p>
           <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-            <input type="email" placeholder="Enter your email" className="flex-1 px-4 py-3 text-sm text-gray-800 outline-none" />
-            <button type="submit" className="bg-dark text-white px-6 py-3 text-sm font-medium tracking-wider uppercase hover:bg-gray-800 transition-colors">
+            <input type="email" placeholder="Enter your email" className="flex-1 px-4 py-3
+            text-sm text-gray-800 outline-none" />
+            <button type="submit" className="bg-dark text-white px-6 py-3 text-sm 
+            font-medium tracking-wider uppercase hover:bg-gray-800 transition-colors">
               Subscribe
             </button>
           </form>
@@ -29,7 +31,8 @@ export default function Footer() {
             </p>
             <div className="flex gap-4">
               {[FiInstagram, FiFacebook, FiTwitter, FiYoutube].map((Icon, i) => (
-                <a key={i} href="#" className="text-gray-400 hover:text-primary-400 transition-colors">
+                <a key={i} href="#" className="text-gray-400 hover:text-primary-400 
+                transition-colors">
                   <Icon size={18} />
                 </a>
               ))}
