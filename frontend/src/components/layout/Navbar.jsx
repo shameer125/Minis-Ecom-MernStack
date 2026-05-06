@@ -65,16 +65,19 @@ export default function Navbar() {
             {menuOpen ? <FiX size={22} /> : <FiMenu size={22} />}
           </button>
 
-          <Link to="/" className="font-display text-2xl md:text-3xl font-bold text-dark tracking-tight">MINIS</Link>
+          <Link to="/" className="font-display text-2xl md:text-3xl font-bold
+          text-dark tracking-tight">MINIS</Link>
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-0">
             {categories.map(cat => (
               <div key={cat.slug} className="group relative">
                 <Link to={`/shop/${cat.slug}`}
-                  className="flex items-center gap-1 px-3 py-7 text-sm font-medium tracking-wider uppercase hover:text-primary-600 transition-colors">
+                  className="flex items-center gap-1 px-3 py-7 text-sm font-medium 
+                  tracking-wider uppercase hover:text-primary-600 transition-colors">
                   {cat.label}
-                  <FiChevronDown size={11} className="group-hover:rotate-180 transition-transform duration-200 mt-0.5" />
+                  <FiChevronDown size={11} className="group-hover:rotate-180 
+                  transition-transform duration-200 mt-0.5" />
                 </Link>
                 {/* Mega dropdown */}
                 <div className="absolute left-1/2 -translate-x-1/2 top-full bg-white shadow-2xl border-t-2 border-primary-500 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 w-72 p-5">
