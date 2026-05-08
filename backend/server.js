@@ -14,7 +14,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://minis-ecom-mern-stack.vercel.app",
+      "https://minis-ecom-mern-stack-fxdr.vercel.app",
     ],
     credentials: true,
   }),
