@@ -64,17 +64,35 @@ app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
+// Browsers / bots hit these on the raw API host — not your Vercel app. Without handlers they
+// fell through to JSON 404 and looked like "backend errors" in Replit logs.
+app.get('/favicon.ico', (_, res) => res.status(204).end());
+app.get('/robots.txt', (_, res) =>
+  res.type('text/plain').send('User-agent: *\nDisallow: /\n'),
+);
+
 // Match `/api/*` first, then bare `/auth`, `/products`, etc.
 app.use('/api', api);
 app.use('/', api);
 
-app.use((req, res) =>
-  res.status(404).json({
-    message: 'Route not found',
-    method: req.method,
-    path: req.path,
-  }),
-);
+app.use((req, res) => {
+  const looksLikeApi =
+    req.path.startsWith('/api') ||
+    /^\/(auth|products|orders|contact|admin|cart|health)(\/|$)/.test(
+      req.path,
+    );
+
+  if (looksLikeApi) {
+    return res.status(404).json({
+      message: 'Route not found',
+      method: req.method,
+      path: req.path,
+    });
+  }
+
+  // Random probes / scanners — plain 404 so logs are less alarming than API-shaped JSON.
+  res.status(404).type('text/plain').send('Not found');
+});
 
 app.use((err, req, res, next) => {
   const status = err.statusCode || 500;
