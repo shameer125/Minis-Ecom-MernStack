@@ -5,6 +5,14 @@ const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 
 dotenv.config();
+
+if (!process.env.JWT_SECRET || !String(process.env.JWT_SECRET).trim()) {
+  console.error(
+    '❌ JWT_SECRET is not set. Add it in Replit Secrets (or backend/.env). Required for login and register.',
+  );
+  process.exit(1);
+}
+
 connectDB();
 
 const app = express();
