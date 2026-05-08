@@ -1,7 +1,16 @@
 import axios from 'axios';
 
+// Backend mounts routes under /api (see backend/server.js). baseURL must end with /api.
+const raw = (import.meta.env.VITE_API_URL || '').trim().replace(/\/+$/, '');
+const baseURL =
+  raw === ''
+    ? undefined
+    : raw.endsWith('/api')
+      ? raw
+      : `${raw}/api`;
+
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL,
 });
 
 API.interceptors.request.use((config) => {

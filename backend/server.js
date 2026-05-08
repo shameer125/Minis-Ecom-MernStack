@@ -9,13 +9,19 @@ connectDB();
 
 const app = express();
 
+const corsOrigins = [
+  'http://localhost:5173',
+  'https://minis-ecom-mern-stack-fxdr.vercel.app',
+  ...(process.env.CORS_ORIGINS || '')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean),
+];
+
 // Middleware
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://minis-ecom-mern-stack-fxdr.vercel.app",
-    ],
+    origin: corsOrigins,
     credentials: true,
   }),
 );
