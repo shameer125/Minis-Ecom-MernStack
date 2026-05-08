@@ -16,7 +16,9 @@ const protect = async (req, res, next) => {
   } else {
     return res.status(401).json({ message: 'No token provided' });
   }
+
 };
+
 
 const admin = (req, res, next) => {
   if (req.user && req.user.isAdmin) {
