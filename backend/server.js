@@ -26,7 +26,6 @@ const corsOrigins = [
     .filter(Boolean),
 ];
 
-// Middleware
 app.use(
   cors({
     origin: corsOrigins,
@@ -44,46 +43,31 @@ const contactRoutes = require('./routes/contactRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 
 /**
- * Normalize paths so `/products`, `/auth/login`, etc. hit the same handlers as `/api/products`, `/api/auth/login`.
- * Replit / browsers often call the API host without the `/api` prefix — without this you get `{ message: 'Route not found' }`.
+ * Single router tree mounted twice:
+ * - `/api/auth`, `/api/products`, … (canonical)
+ * - `/auth`, `/products`, … (same handlers — fixes clients that omit `/api`)
+ *
+ * This avoids mutating req.url (unreliable on some hosts / proxies).
  */
-const API_ROOT_PREFIXES = ['/auth', '/products', '/orders', '/contact', '/admin', '/cart', '/health'];
+const api = express.Router();
+api.use('/auth', authRoutes);
+api.use('/products', productRoutes);
+api.use('/orders', orderRoutes);
+api.use('/cart', cartRoutes);
+api.use('/contact', contactRoutes);
+api.use('/admin', adminRoutes);
+api.get('/health', (req, res) =>
+  res.json({ status: 'OK', message: 'MINIS API running' }),
+);
 
-app.use((req, res, next) => {
-  const pathOnly = req.path || '/';
-  if (pathOnly === '/') return next();
-  if (pathOnly.startsWith('/api')) return next();
-
-  const needsApiPrefix = API_ROOT_PREFIXES.some(
-    (root) => pathOnly === root || pathOnly.startsWith(`${root}/`),
-  );
-
-  if (needsApiPrefix) {
-    const qs = req.originalUrl.includes('?')
-      ? req.originalUrl.slice(req.originalUrl.indexOf('?'))
-      : '';
-    req.url = `/api${pathOnly}${qs}`;
-  }
-  next();
-});
-
-// Routes
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
-app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/cart', cartRoutes);
-app.use('/api/contact', contactRoutes);
-app.use('/api/admin', adminRoutes);
+// Match `/api/*` first, then bare `/auth`, `/products`, etc.
+app.use('/api', api);
+app.use('/', api);
 
-const healthJson = (req, res) =>
-  res.json({ status: 'OK', message: 'MINIS API running' });
-app.get('/api/health', healthJson);
-
-// 404 handler (includes path so logs / clients can see what missed)
 app.use((req, res) =>
   res.status(404).json({
     message: 'Route not found',
@@ -92,7 +76,6 @@ app.use((req, res) =>
   }),
 );
 
-// Error handler
 app.use((err, req, res, next) => {
   const status = err.statusCode || 500;
   res.status(status).json({ message: err.message || 'Server Error' });
