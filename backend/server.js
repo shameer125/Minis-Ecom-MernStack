@@ -61,7 +61,7 @@ api.get('/health', (req, res) =>
 );
 
 app.get('/', (req, res) => {
-  res.send('API is running...');
+  res.send("MINIS API is running...");
 });
 
 // Browsers / bots hit these on the raw API host — not your Vercel app. Without handlers they
