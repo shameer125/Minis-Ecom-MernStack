@@ -73,7 +73,6 @@ app.get('/robots.txt', (_, res) =>
 
 // Match `/api/*` first, then bare `/auth`, `/products`, etc.
 app.use('/api', api);
-app.use('/', api);
 
 app.use((req, res) => {
   const looksLikeApi =
