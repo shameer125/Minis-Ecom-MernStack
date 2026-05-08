@@ -36,19 +36,35 @@ app.use(
 app.use(express.json());
 app.use(morgan('dev'));
 
-// Routes
-app.get("/", (req, res) => {
-  res.send("API is running...");
-});
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/products', require('./routes/productRoutes'));
-app.use('/api/orders', require('./routes/orderRoutes'));
-app.use('/api/cart', require('./routes/cartRoutes'));
-app.use('/api/contact', require('./routes/contactRoutes'));
-app.use('/api/admin', require('./routes/adminRoutes'));
+const authRoutes = require('./routes/authRoutes');
+const productRoutes = require('./routes/productRoutes');
+const orderRoutes = require('./routes/orderRoutes');
+const cartRoutes = require('./routes/cartRoutes');
+const contactRoutes = require('./routes/contactRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
-// Health check
-app.get('/api/health', (req, res) => res.json({ status: 'OK', message: 'MINIS API running' }));
+/** Register router at both `/api/...` (canonical) and `/...` so clients without `/api` in base URL still work. */
+function mountApiPair(basePath, router) {
+  app.use(`/api${basePath}`, router);
+  app.use(basePath, router);
+}
+
+// Routes
+app.get('/', (req, res) => {
+  res.send('API is running...');
+});
+
+mountApiPair('/auth', authRoutes);
+mountApiPair('/products', productRoutes);
+mountApiPair('/orders', orderRoutes);
+mountApiPair('/cart', cartRoutes);
+mountApiPair('/contact', contactRoutes);
+mountApiPair('/admin', adminRoutes);
+
+const healthJson = (req, res) =>
+  res.json({ status: 'OK', message: 'MINIS API running' });
+app.get('/api/health', healthJson);
+app.get('/health', healthJson);
 
 // 404 handler
 app.use((req, res) => res.status(404).json({ message: 'Route not found' }));

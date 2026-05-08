@@ -1,10 +1,13 @@
 import axios from 'axios';
 
-// Backend mounts routes under /api (see backend/server.js). baseURL must end with /api.
+// Backend serves `/api/...` (canonical). Same routers are also mounted at `/...` for backwards compatibility.
+// With empty env in dev, use `/api` so Vite proxy forwards to the Express server.
 const raw = (import.meta.env.VITE_API_URL || '').trim().replace(/\/+$/, '');
 const baseURL =
   raw === ''
-    ? undefined
+    ? import.meta.env.DEV
+      ? '/api'
+      : undefined
     : raw.endsWith('/api')
       ? raw
       : `${raw}/api`;
