@@ -49,6 +49,19 @@ export default function Navbar() {
 
   useEffect(() => { setMenuOpen(false); setUserMenuOpen(false); setSearchOpen(false); }, [location]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    if (menuOpen) document.body.style.overflow = 'hidden';
+    else document.body.style.overflow = '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [menuOpen]);
+
+  useEffect(() => {
+    if (!menuOpen) setMobileExpanded(null);
+  }, [menuOpen]);
+
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -61,7 +74,13 @@ export default function Navbar() {
     <header className={`sticky top-0 z-50 bg-white transition-shadow duration-300 ${scrolled ? 'shadow-md' : 'shadow-sm'}`}>
       <div className="container-custom">
         <div className="flex items-center justify-between h-16 md:h-20">
-          <button className="md:hidden p-2 -ml-2" onClick={() => setMenuOpen(!menuOpen)}>
+          <button
+            type="button"
+            className="md:hidden p-2 -ml-2 rounded-lg transition-colors hover:bg-gray-100"
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-expanded={menuOpen}
+            aria-controls="mobile-nav"
+          >
             {menuOpen ? <FiX size={22} /> : <FiMenu size={22} />}
           </button>
 
@@ -168,29 +187,45 @@ export default function Navbar() {
         )}
       </div>
 
-      {/* Mobile Menu */}
-      {menuOpen && (
-        <div className="md:hidden border-t bg-white max-h-[80vh] overflow-y-auto">
+      {/* Mobile Menu — always mounted for smooth height/opacity transition */}
+      <div
+        id="mobile-nav"
+        aria-hidden={!menuOpen}
+        className={`md:hidden border-t bg-white transition-[max-height,opacity] duration-[420ms] ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none ${
+          menuOpen
+            ? 'max-h-[min(85vh,640px)] opacity-100 overflow-y-auto overscroll-contain shadow-[inset_0_1px_0_0_rgba(0,0,0,0.06)] pointer-events-auto'
+            : 'max-h-0 opacity-0 overflow-hidden pointer-events-none border-transparent'
+        }`}
+      >
           {categories.map(cat => (
             <div key={cat.slug}>
               <button
-                className="w-full flex items-center justify-between px-6 py-3.5 font-semibold border-b border-gray-50 uppercase text-sm tracking-wider"
+                type="button"
+                className="w-full flex items-center justify-between px-6 py-3.5 font-semibold border-b border-gray-50 uppercase text-sm tracking-wider text-left"
                 onClick={() => setMobileExpanded(mobileExpanded === cat.slug ? null : cat.slug)}
               >
                 {cat.label}
-                <FiChevronDown size={14} className={`transition-transform ${mobileExpanded === cat.slug ? 'rotate-180' : ''}`} />
+                <FiChevronDown size={14} className={`shrink-0 transition-transform duration-300 ease-out ${mobileExpanded === cat.slug ? 'rotate-180' : ''}`} />
               </button>
-              {mobileExpanded === cat.slug && (
-                <div className="bg-gray-50 px-8 py-3 border-b border-gray-100 space-y-2">
-                  {cat.subs.map(sub => (
-                    <Link key={sub.label}
-                      to={sub.slug ? `/shop/${cat.slug}?subcategory=${sub.slug}` : `/shop/${cat.slug}`}
-                      className={`block py-1.5 text-sm transition-colors hover:text-primary-600 ${sub.slug === '' ? 'font-semibold text-dark' : 'text-gray-600'}`}>
-                      {sub.label}
-                    </Link>
-                  ))}
+              <div
+                className={`grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none ${
+                  mobileExpanded === cat.slug ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                }`}
+              >
+                <div className="min-h-0 overflow-hidden">
+                  <div className="bg-gray-50 px-8 py-3 border-b border-gray-100 space-y-2">
+                    {cat.subs.map(sub => (
+                      <Link
+                        key={sub.label}
+                        to={sub.slug ? `/shop/${cat.slug}?subcategory=${sub.slug}` : `/shop/${cat.slug}`}
+                        className={`block py-1.5 text-sm transition-colors hover:text-primary-600 ${sub.slug === '' ? 'font-semibold text-dark' : 'text-gray-600'}`}
+                      >
+                        {sub.label}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
           ))}
           <Link to="/sale" className="block px-6 py-3.5 font-bold border-b border-gray-50 uppercase text-sm tracking-wider text-primary-600">Sale</Link>
@@ -208,7 +243,7 @@ export default function Navbar() {
                 {user.isAdmin && <Link to="/admin" className="block py-2 text-sm font-semibold text-primary-600">⚙ Admin Dashboard</Link>}
                 <Link to="/profile" className="block py-2 text-sm">My Profile</Link>
                 <Link to="/orders" className="block py-2 text-sm">My Orders</Link>
-                <button onClick={logout} className="block py-2 text-sm text-red-500">Sign Out</button>
+                <button type="button" onClick={logout} className="block w-full text-left py-2 text-sm text-red-500">Sign Out</button>
               </>
             ) : (
               <>
@@ -217,8 +252,7 @@ export default function Navbar() {
               </>
             )}
           </div>
-        </div>
-      )}
+      </div>
     </header>
   );
 }

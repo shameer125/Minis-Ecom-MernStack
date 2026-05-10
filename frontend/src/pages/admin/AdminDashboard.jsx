@@ -35,13 +35,13 @@ function CircleProgress({ percent, color, size = 80 }) {
 
 function StatMiniCard({ icon: Icon, label, value, color }) {
   return (
-    <div className="flex items-center gap-3 bg-white rounded-xl px-4 py-3 shadow-sm border border-gray-100">
-      <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${color}`}>
+    <div className="flex items-center gap-2 sm:gap-3 bg-white rounded-xl px-3 sm:px-4 py-3 shadow-sm border border-gray-100 min-w-0">
+      <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center shrink-0 ${color}`}>
         <Icon size={16} className="text-white" />
       </div>
-      <div>
-        <p className="text-xs text-gray-400 font-medium">{label}</p>
-        <p className="text-sm font-bold text-gray-800">{value}</p>
+      <div className="min-w-0">
+        <p className="text-[10px] sm:text-xs text-gray-400 font-medium truncate">{label}</p>
+        <p className="text-xs sm:text-sm font-bold text-gray-800 truncate">{value}</p>
       </div>
     </div>
   );
@@ -85,32 +85,46 @@ export default function AdminDashboard() {
   ] : [];
 
   return (
-    <div className="min-h-screen bg-[#f8f8fb]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="w-full max-w-full" style={{ fontFamily: "'DM Sans', sans-serif" }}>
       {/* Top bar */}
-      <div className="flex items-center justify-between mb-8 gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Overview</h1>
-          <p className="text-sm text-gray-400 mt-0.5">Welcome back, {user?.name} 👋</p>
-        </div>
-        <div className="flex items-center gap-3 flex-1 max-w-md">
-          <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2.5 flex-1 shadow-sm">
-            <FiSearch size={15} className="text-gray-400" />
-            <input
-              value={searchVal}
-              onChange={e => setSearchVal(e.target.value)}
-              placeholder="Search..."
-              className="outline-none text-sm flex-1 bg-transparent text-gray-700 placeholder-gray-400"
-            />
+      <div className="flex flex-col gap-4 sm:gap-5 mb-6 md:mb-8">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 md:items-center">
+          <div className="min-w-0 shrink-0">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Overview</h1>
+            <p className="text-xs sm:text-sm text-gray-400 mt-0.5 truncate max-w-full">
+              Welcome back, {user?.name} 👋
+            </p>
           </div>
-          <button className="p-2.5 bg-white border border-gray-200 rounded-xl shadow-sm hover:bg-gray-50 transition-colors">
-            <FiMoreVertical size={16} className="text-gray-500" />
-          </button>
-          <button className="p-2.5 bg-white border border-gray-200 rounded-xl shadow-sm hover:bg-gray-50 transition-colors relative">
-            <FiBell size={16} className="text-gray-500" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-amber-400 rounded-full" />
-          </button>
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-bold text-sm shadow-sm">
-            {user?.name?.[0]?.toUpperCase()}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full md:flex-1 md:max-w-md md:ml-auto">
+            <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 sm:px-4 py-2.5 flex-1 min-w-0 shadow-sm">
+              <FiSearch size={15} className="text-gray-400 shrink-0" />
+              <input
+                value={searchVal}
+                onChange={(e) => setSearchVal(e.target.value)}
+                placeholder="Search..."
+                className="outline-none text-sm flex-1 min-w-0 bg-transparent text-gray-700 placeholder-gray-400"
+              />
+            </div>
+            <div className="flex items-center gap-2 sm:gap-3 justify-end sm:justify-start shrink-0">
+              <button
+                type="button"
+                className="p-2.5 bg-white border border-gray-200 rounded-xl shadow-sm hover:bg-gray-50 transition-colors"
+                aria-label="More options"
+              >
+                <FiMoreVertical size={16} className="text-gray-500" />
+              </button>
+              <button
+                type="button"
+                className="p-2.5 bg-white border border-gray-200 rounded-xl shadow-sm hover:bg-gray-50 transition-colors relative"
+                aria-label="Notifications"
+              >
+                <FiBell size={16} className="text-gray-500" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-amber-400 rounded-full" />
+              </button>
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-bold text-sm shadow-sm shrink-0">
+                {user?.name?.[0]?.toUpperCase()}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -120,41 +134,42 @@ export default function AdminDashboard() {
           <div className="w-10 h-10 border-4 border-amber-400 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : (
-        <div className="grid grid-cols-12 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5">
 
           {/* ── Revenue Chart ── */}
-          <div className="col-span-12 lg:col-span-8 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <div className="flex items-start justify-between mb-1">
-              <div>
-                <p className="text-sm text-gray-400 font-medium">Total Revenue</p>
-                <p className="text-3xl font-bold text-gray-800 mt-1">
+          <div className="col-span-12 lg:col-span-8 bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-1">
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-gray-400 font-medium">Total Revenue</p>
+                <p className="text-xl sm:text-3xl font-bold text-gray-800 mt-1 break-all">
                   PKR {stats?.totalRevenue?.toLocaleString() || '0'}
                 </p>
               </div>
-              <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5">
+              <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5 self-start">
                 <span className="text-xs font-semibold text-amber-600">THIS YEAR</span>
-                <svg width="10" height="6" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" stroke="#d97706" strokeWidth="1.5" fill="none" strokeLinecap="round"/></svg>
+                <svg width="10" height="6" viewBox="0 0 10 6" className="shrink-0" aria-hidden><path d="M1 1l4 4 4-4" stroke="#d97706" strokeWidth="1.5" fill="none" strokeLinecap="round"/></svg>
               </div>
             </div>
 
-            {/* Bar Chart */}
-            <div className="flex items-end gap-2 mt-6 h-44">
-              {barData.map(({ month, value }) => {
-                const heightPct = maxRev > 0 ? (value / maxRev) * 100 : 0;
-                const isActive = heightPct > 60;
-                return (
-                  <div key={month} className="flex-1 flex flex-col items-center gap-1.5">
-                    <div className="w-full flex flex-col justify-end" style={{ height: '152px' }}>
-                      <div
-                        className="w-full rounded-t-md relative group cursor-pointer transition-all duration-500"
-                        style={{
-                          height: `${Math.max(heightPct, 4)}%`,
-                          background: isActive
-                            ? 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%)'
-                            : '#f0f0f0',
-                          minHeight: '6px'
-                        }}
-                      >
+            {/* Bar Chart — horizontal scroll on narrow screens */}
+            <div className="mt-4 sm:mt-6 -mx-2 sm:mx-0 px-2 sm:px-0 overflow-x-auto overscroll-x-contain">
+              <div className="flex items-end gap-1 sm:gap-2 min-w-[280px] sm:min-w-0 h-36 sm:h-44">
+                {barData.map(({ month, value }) => {
+                  const heightPct = maxRev > 0 ? (value / maxRev) * 100 : 0;
+                  const isActive = heightPct > 60;
+                  return (
+                    <div key={month} className="flex-1 min-w-[1.25rem] sm:min-w-0 flex flex-col items-center gap-1 sm:gap-1.5">
+                      <div className="w-full flex flex-col justify-end" style={{ height: 'clamp(100px, 28vw, 152px)' }}>
+                        <div
+                          className="w-full rounded-t-md relative group cursor-pointer transition-all duration-500"
+                          style={{
+                            height: `${Math.max(heightPct, 4)}%`,
+                            background: isActive
+                              ? 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%)'
+                              : '#f0f0f0',
+                            minHeight: '6px'
+                          }}
+                        >
                         {value > 0 && (
                           <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
                             PKR {Math.round(value/1000)}k
@@ -162,34 +177,35 @@ export default function AdminDashboard() {
                         )}
                       </div>
                     </div>
-                    <span className="text-xs text-gray-400 font-medium">{month}</span>
+                    <span className="text-[10px] sm:text-xs text-gray-400 font-medium">{month}</span>
                   </div>
                 );
               })}
             </div>
           </div>
+          </div>
 
           {/* ── Customer Circles ── */}
-          <div className="col-span-12 lg:col-span-4 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <div className="flex items-start justify-between mb-1">
+          <div className="col-span-12 lg:col-span-4 bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100">
+            <div className="flex items-start justify-between gap-3 mb-1">
               <div>
                 <p className="text-base font-bold text-gray-800">Customers</p>
                 <p className="text-xs text-gray-400">Information About your Customers</p>
               </div>
-              <button className="text-gray-400 hover:text-gray-600">
+              <button type="button" className="text-gray-400 hover:text-gray-600" aria-label="Customer stats options">
                 <FiSliders size={16} />
               </button>
             </div>
-            <div className="grid grid-cols-2 gap-4 mt-5">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-4 sm:mt-5">
               {customerCircles.map(({ label, percent, color }) => (
-                <div key={label} className="flex flex-col items-center gap-2">
-                  <div className="relative">
+                <div key={label} className="flex flex-col items-center gap-2 min-w-0">
+                  <div className="relative scale-[0.82] sm:scale-100 origin-center">
                     <CircleProgress percent={percent} color={color} size={80} />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <span className="text-sm font-bold text-gray-700">{percent}<span className="text-xs">%</span></span>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-400 text-center leading-tight">{label}</p>
+                  <p className="text-[10px] sm:text-xs text-gray-400 text-center leading-tight px-0.5">{label}</p>
                 </div>
               ))}
             </div>
@@ -206,21 +222,22 @@ export default function AdminDashboard() {
             </div>
 
             {/* Top Products Table */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-                <p className="font-bold text-gray-800">Top Products</p>
-                <Link to="/admin/products" className="text-xs text-amber-500 hover:text-amber-600 font-medium flex items-center gap-1">
+            <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="flex flex-wrap items-center justify-between gap-2 px-4 sm:px-5 py-3 sm:py-4 border-b border-gray-100">
+                <p className="font-bold text-gray-800 text-sm sm:text-base">Top Products</p>
+                <Link to="/admin/products" className="text-xs text-amber-500 hover:text-amber-600 font-medium flex items-center gap-1 shrink-0">
                   View All <FiArrowRight size={12} />
                 </Link>
               </div>
-              <table className="w-full text-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm min-w-[500px]">
                 <thead>
                   <tr className="bg-gray-50">
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Product</th>
-                    <th className="text-center px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Inventory</th>
-                    <th className="text-center px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Sale</th>
-                    <th className="text-center px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Price</th>
-                    <th className="text-center px-3 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
+                    <th className="text-left px-3 sm:px-5 py-3 text-[10px] sm:text-xs font-semibold text-gray-400 uppercase tracking-wider">Product</th>
+                    <th className="text-center px-2 sm:px-3 py-3 text-[10px] sm:text-xs font-semibold text-gray-400 uppercase tracking-wider">Inventory</th>
+                    <th className="text-center px-2 sm:px-3 py-3 text-[10px] sm:text-xs font-semibold text-gray-400 uppercase tracking-wider">Sale</th>
+                    <th className="text-center px-2 sm:px-3 py-3 text-[10px] sm:text-xs font-semibold text-gray-400 uppercase tracking-wider">Price</th>
+                    <th className="text-center px-2 sm:px-3 py-3 text-[10px] sm:text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
@@ -231,7 +248,7 @@ export default function AdminDashboard() {
                       const item = order.orderItems?.[0];
                       return item ? (
                         <tr key={order._id} className="hover:bg-amber-50/40 transition-colors">
-                          <td className="px-5 py-3">
+                          <td className="px-3 sm:px-5 py-3">
                             <div className="flex items-center gap-3">
                               {item.image
                                 ? <img src={item.image} alt={item.name} className="w-9 h-11 object-cover rounded-lg bg-gray-100 shrink-0" />
@@ -259,17 +276,20 @@ export default function AdminDashboard() {
                   )}
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
 
           {/* ── Stats Overview (category bars) ── */}
-          <div className="col-span-12 lg:col-span-4 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div className="col-span-12 lg:col-span-4 bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100">
             <div className="flex items-start justify-between mb-1">
               <div>
                 <p className="text-base font-bold text-gray-800">Stats Overview</p>
                 <p className="text-xs text-gray-400">Information about store visits</p>
               </div>
-              <button className="text-gray-400 hover:text-gray-600"><FiSliders size={16} /></button>
+              <button type="button" className="text-gray-400 hover:text-gray-600" aria-label="Stats options">
+                <FiSliders size={16} />
+              </button>
             </div>
 
             <div className="mt-6 space-y-5">
