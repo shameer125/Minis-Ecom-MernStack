@@ -31,6 +31,8 @@ export const addReview = (id, data) => API.post(`/products/${id}/reviews`, data)
 // Auth
 export const loginUser = (data) => API.post('/auth/login', data);
 export const registerUser = (data) => API.post('/auth/register', data);
+export const verifyEmail = (params) =>
+  API.get('/auth/verify-email', { params });
 export const getProfile = () => API.get('/auth/profile');
 export const updateProfile = (data) => API.put('/auth/profile', data);
 

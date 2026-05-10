@@ -533,7 +533,13 @@ const seedDB = async () => {
 
     // Create admin user
     await User.deleteMany({ email: 'admin@minis.com' });
-    const admin = new User({ name: 'Admin', email: 'admin@minis.com', password: 'admin123', isAdmin: true });
+    const admin = new User({
+      name: 'Admin',
+      email: 'admin@minis.com',
+      password: 'admin123',
+      isAdmin: true,
+      isVerified: true,
+    });
     await admin.save();
     console.log('✅ Admin user created → admin@minis.com / admin123');
 

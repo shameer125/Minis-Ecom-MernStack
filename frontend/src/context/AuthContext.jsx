@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState } from 'react';
 import { loginUser, registerUser, updateProfile } from '../utils/api';
 import toast from 'react-hot-toast';
 
@@ -30,16 +30,20 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const register = async (name, email, password) => {
+  const register = async (name, email, password, phone) => {
     setLoading(true);
     try {
-      const { data } = await registerUser({ name, email, password });
-      saveUser(data);
-      toast.success(`Welcome to MINIS, ${data.name}!`);
-      return true;
+      const { data } = await registerUser({ name, email, password, phone });
+      toast.success(data.message || 'Check your email to verify your account.');
+      return { ok: true };
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Registration failed');
-      return false;
+      const msg = err.response?.data?.message || 'Registration failed';
+      const serverErrors = err.response?.data?.errors;
+      toast.error(msg);
+      return {
+        ok: false,
+        errors: typeof serverErrors === 'object' && serverErrors !== null ? serverErrors : undefined,
+      };
     } finally {
       setLoading(false);
     }
