@@ -7,7 +7,6 @@ const User = require('../models/User');
 const SmsRegisterOtp = require('../models/SmsRegisterOtp');
 const EmailVerifyOtp = require('../models/EmailVerifyOtp');
 const { protect, generateToken, setAuthCookie, clearAuthCookie } = require('../middleware/auth');
-const { emailConfigured } = require('../utils/sendVerificationEmail');
 const { sendEmail } = require('../utils/sendEmail');
 const { validateShoppingEmail } = require('../utils/emailValidation');
 const { emailOtpCooldownMs, emailOtpExpiryMs } = require('../utils/emailOtpTimers');
@@ -19,6 +18,7 @@ const {
   hashOtp,
   verifyOtp,
 } = require('../utils/registerSms');
+const { registerOptionsHandler } = require('../handlers/registerOptionsHandler');
 
 
 const NAME_RE = /^[A-Za-z\s]+$/;
@@ -142,15 +142,6 @@ router.get(
     res.redirect(`${fe}/login?verified=true`);
   }),
 );
-
-function registerOptionsHandler(req, res) {
-  res.json({
-    phoneVerificationRequired: smsSignupConfigured(),
-    smsResendCooldownSeconds: Math.round(smsCooldownMs() / 1000),
-    emailOtpResendCooldownSeconds: Math.round(emailOtpCooldownMs() / 1000),
-    emailDeliveryConfigured: emailConfigured(),
-  });
-}
 
 // GET /api/auth/register-options (+ slash alias for brittle proxies/caches)
 router.get('/register-options', registerOptionsHandler);
@@ -477,3 +468,5 @@ router.put('/profile', protect, asyncHandler(async (req, res) => {
 }));
 
 module.exports = router;
+module.exports.registerOptionsHandler = registerOptionsHandler;
+module.exports.resendVerificationHandler = resendVerificationHandler;

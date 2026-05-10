@@ -21,6 +21,7 @@ const app = express();
 const corsOrigins = [
   'http://localhost:5173',
   'https://minis-ecom-mern-stack-fxdr.vercel.app',
+  'https://minis-ecom-mern-stack--alishameer251.replit.app',
   ...(process.env.CORS_ORIGINS || '')
     .split(',')
     .map((o) => o.trim())
@@ -43,8 +44,29 @@ const orderRoutes = require('./routes/orderRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const { registerOptionsHandler } = require('./handlers/registerOptionsHandler');
 const { emailConfigured } = require('./utils/sendVerificationEmail');
 const { smsSignupConfigured } = require('./utils/registerSms');
+
+/** Bump when behavior Replit-users care about changes (see GET /api/health). */
+const MINIS_API_BUILD = 'register-mail-2026-05-10';
+
+// Mounted on app first so these paths cannot be lost vs whatever old auth router shipped on Replit.
+app.get('/api/deploy-check', (_, res) =>
+  res.json({ ok: true, apiBuild: MINIS_API_BUILD }),
+);
+app.get('/api/mail/register-options', registerOptionsHandler);
+app.get('/api/auth/register-options', registerOptionsHandler);
+app.get('/api/auth/register/options', registerOptionsHandler);
+
+if (typeof authRoutes.resendVerificationHandler === 'function') {
+  app.post('/api/mail/resend', authRoutes.resendVerificationHandler);
+  ['/resend-email-verification', '/resend-verification', '/resend'].forEach((p) => {
+    app.post(`/api/auth${p}`, authRoutes.resendVerificationHandler);
+  });
+} else {
+  console.warn('[MINIS] authRoutes missing resendVerificationHandler — redeploy backend/routes/authRoutes.js');
+}
 
 /**
  * Single router tree mounted twice:
@@ -61,7 +83,11 @@ api.use('/cart', cartRoutes);
 api.use('/contact', contactRoutes);
 api.use('/admin', adminRoutes);
 api.get('/health', (req, res) =>
-  res.json({ status: 'OK', message: 'MINIS API running' }),
+  res.json({
+    status: 'OK',
+    message: 'MINIS API running',
+    apiBuild: MINIS_API_BUILD,
+  }),
 );
 
 app.get('/', (req, res) => {
@@ -83,7 +109,7 @@ app.use(api);
 app.use((req, res) => {
   const looksLikeApi =
     req.path.startsWith('/api') ||
-    /^\/(auth|products|orders|contact|admin|cart|health)(\/|$)/.test(
+    /^\/(auth|products|orders|contact|admin|cart|health|mail)(\/|$)/.test(
       req.path,
     );
 

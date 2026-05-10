@@ -138,7 +138,7 @@ function OtpForm({ emailParam, redirect, cooldownSecDefault }) {
           : err.response?.data?.message || 'Could not resend email';
       if (typeof msg === 'string' && msg.includes('Route not found')) {
         msg =
-          'Verification “resend” is not on your live API yet. Redeploy the latest backend to Replit from this repo, then set EMAIL_USER + EMAIL_PASS (and API_PUBLIC_URL) in Replit Secrets.';
+          'Backend on Replit does not expose the resend route yet. On Replit: Version control → Pull from GitHub, then Stop/Run so `backend/server.js` restarts with the latest files. Secrets: EMAIL_USER, EMAIL_PASS, API_PUBLIC_URL, FRONTEND_URL.';
       }
       toast.error(msg);
       if (status === 429) setResendSecs(cooldownSec);

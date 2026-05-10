@@ -71,6 +71,7 @@ export const logoutUser = () => API.post('/auth/logout');
 export const registerUser = (data) => API.post('/auth/register', data);
 export const getRegisterOptions = () =>
   axiosUntil([
+    { method: 'get', url: '/mail/register-options' },
     { method: 'get', url: '/auth/register-options' },
     { method: 'get', url: '/auth/register/options' },
   ]);
@@ -81,6 +82,7 @@ export const verifyEmail = (params) =>
 export const verifyEmailOtp = (data) => API.post('/auth/verify-email-otp', data);
 export const resendEmailVerification = (data) =>
   axiosUntil([
+    { method: 'post', url: '/mail/resend', data },
     { method: 'post', url: '/auth/resend-email-verification', data },
     { method: 'post', url: '/auth/resend-verification', data },
     { method: 'post', url: '/auth/resend', data },
