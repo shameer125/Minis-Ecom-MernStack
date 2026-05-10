@@ -43,6 +43,8 @@ const orderRoutes = require('./routes/orderRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const { emailConfigured } = require('./utils/sendVerificationEmail');
+const { smsSignupConfigured } = require('./utils/registerSms');
 
 /**
  * Single router tree mounted twice:
@@ -103,4 +105,16 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
+
+if (!emailConfigured()) {
+  console.warn(
+    '[MINIS] Outbound mail is OFF. Signup verification needs Gmail: EMAIL_USER + EMAIL_PASS (app password), or other providers via RESEND_API_KEY / EMAIL_HOST + EMAIL_USER + EMAIL_PASS.',
+  );
+}
+if (!smsSignupConfigured()) {
+  console.warn(
+    '[MINIS] Phone SMS OTP is OFF: set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER (and optionally DEFAULT_SMS_COUNTRY_CODE).',
+  );
+}
+
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

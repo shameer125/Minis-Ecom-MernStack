@@ -57,6 +57,7 @@ export default function RegisterPage() {
   const [errors, setErrors] = useState(initialErrors());
   const [showPw, setShowPw] = useState(false);
   const [phoneVerificationRequired, setPhoneVerificationRequired] = useState(false);
+  const [emailDeliveryConfigured, setEmailDeliveryConfigured] = useState(null);
   const [smsCooldownSec, setSmsCooldownSec] = useState(55);
   const [resendSecs, setResendSecs] = useState(0);
   const [sendingCode, setSendingCode] = useState(false);
@@ -71,6 +72,9 @@ export default function RegisterPage() {
       .then(({ data }) => {
         if (!alive || !data) return;
         setPhoneVerificationRequired(Boolean(data.phoneVerificationRequired));
+        if (typeof data.emailDeliveryConfigured === 'boolean') {
+          setEmailDeliveryConfigured(data.emailDeliveryConfigured);
+        }
         const c = Number(data.smsResendCooldownSeconds);
         setSmsCooldownSec(Number.isFinite(c) && c > 0 ? c : 55);
       })
@@ -147,6 +151,16 @@ export default function RegisterPage() {
           <h1 className="font-display text-4xl text-dark mb-2">Create Account</h1>
           <p className="text-gray-500 text-sm">Join MINIS for exclusive offers</p>
         </div>
+        {emailDeliveryConfigured === false && (
+          <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+            Mail is not wired on the API. Add Gmail{' '}
+            <span className="font-mono">EMAIL_USER</span> and{' '}
+            <span className="font-mono">EMAIL_PASS</span> (Google App Password) — see{' '}
+            <span className="font-mono">backend/.env.example</span>. Set{' '}
+            <span className="font-mono">API_PUBLIC_URL</span> so the link in the email points at this
+            server (e.g. http://localhost:5000).
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1">Full Name</label>

@@ -7,6 +7,8 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true, minlength: 8 },
   isAdmin: { type: Boolean, default: false },
   isVerified: { type: Boolean, default: false },
+  /** Plain token for GET /api/auth/verify/:token (Nodemailer link flow); legacy hashes use verificationTokenHash */
+  verificationToken: { type: String, select: false },
   verificationTokenHash: { type: String, select: false },
   verificationTokenExpires: { type: Date, select: false },
   address: {

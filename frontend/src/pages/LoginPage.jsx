@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
@@ -10,6 +11,20 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirect = searchParams.get('redirect') || '/';
+
+  useEffect(() => {
+    if (searchParams.get('verified') === 'true') {
+      toast.success('Email verified successfully');
+    }
+    const err = searchParams.get('verifyError');
+    if (!err) return;
+    const map = {
+      invalid: 'This verification link is invalid.',
+      expired:
+        'This verification link has expired. Use “Send new verification email” on the verify page with your address.',
+    };
+    toast.error(map[err] || 'Email verification failed.');
+  }, [searchParams]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
