@@ -16,11 +16,10 @@ export function clearBearerToken() {
 // Backend serves `/api/...` (canonical). Same routers are also mounted at `/...` for backwards compatibility.
 // With empty env in dev, use `/api` so Vite proxy forwards to the Express server.
 const raw = (import.meta.env.VITE_API_URL || '').trim().replace(/\/+$/, '');
+// Always use `/api` as path prefix when no absolute API origin is set (Vite dev proxy; static hosts with `/api` rewrites).
 const baseURL =
   raw === ''
-    ? import.meta.env.DEV
-      ? '/api'
-      : undefined
+    ? '/api'
     : raw.endsWith('/api')
       ? raw
       : `${raw}/api`;

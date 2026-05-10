@@ -73,8 +73,10 @@ app.get('/robots.txt', (_, res) =>
   res.type('text/plain').send('User-agent: *\nDisallow: /\n'),
 );
 
-// Match `/api/*` first, then bare `/auth`, `/products`, etc.
+// Match `/api/*` first, then the same tree at repo root so `/auth/...` works when a proxy
+// forwards without the `/api` prefix (common source of JSON { message: "Route not found" }).
 app.use('/api', api);
+app.use(api);
 
 app.use((req, res) => {
   const looksLikeApi =

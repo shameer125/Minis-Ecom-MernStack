@@ -184,7 +184,7 @@ function OtpForm({ emailParam, redirect, cooldownSecDefault }) {
         onClick={resend}
         className="w-full py-2.5 text-sm border border-dark/15 rounded hover:bg-dark/5 disabled:opacity-50"
       >
-        {resendSecs > 0 ? `Resend email (${resendSecs}s)` : 'Email new code'}
+        {resendSecs > 0 ? `Resend email (${resendSecs}s)` : 'Send new verification email'}
       </button>
     </form>
   );
