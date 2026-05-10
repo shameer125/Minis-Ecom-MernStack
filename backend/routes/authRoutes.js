@@ -144,6 +144,7 @@ router.post('/login', asyncHandler(async (req, res) => {
     email: user.email,
     isAdmin: user.isAdmin,
     isVerified: user.isVerified,
+    token: jwt,
   });
 }));
 
@@ -178,6 +179,7 @@ router.put('/profile', protect, asyncHandler(async (req, res) => {
     email: updated.email,
     isAdmin: updated.isAdmin,
     isVerified: updated.isVerified,
+    token: jwt,
   });
 }));
 

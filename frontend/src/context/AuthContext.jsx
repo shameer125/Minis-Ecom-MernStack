@@ -5,6 +5,8 @@ import {
   updateProfile,
   logoutUser,
   getProfile,
+  setBearerToken,
+  clearBearerToken,
 } from '../utils/api';
 import toast from 'react-hot-toast';
 
@@ -14,11 +16,27 @@ export const useAuth = () => useContext(AuthContext);
 
 const LS_KEY = 'minis_user';
 
-/** Persist display fields only; JWT stays in HttpOnly cookie. Strip legacy tokens. */
+/** Persist display fields only; bearer JWT uses sessionStorage, not localStorage. */
 function sanitizeStoredUser(u) {
   if (!u || typeof u !== 'object') return null;
   const { token: _discard, password: _p, ...safe } = u;
   return safe;
+}
+
+function migrateLegacyTokenFromLocalStorage() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return;
+    const p = JSON.parse(raw);
+    const t = p?.token;
+    if (typeof t === 'string' && t.trim()) {
+      setBearerToken(t);
+      delete p.token;
+      localStorage.setItem(LS_KEY, JSON.stringify(p));
+    }
+  } catch (_) {
+    /* ignore */
+  }
 }
 
 export function AuthProvider({ children }) {
@@ -36,6 +54,7 @@ export function AuthProvider({ children }) {
   };
 
   useEffect(() => {
+    migrateLegacyTokenFromLocalStorage();
     let cancelled = false;
     (async () => {
       try {
@@ -45,6 +64,7 @@ export function AuthProvider({ children }) {
         if (!cancelled) {
           setUser(null);
           localStorage.removeItem(LS_KEY);
+          clearBearerToken();
         }
       } finally {
         if (!cancelled) setSessionChecked(true);
@@ -59,6 +79,7 @@ export function AuthProvider({ children }) {
     setLoading(true);
     try {
       const { data } = await loginUser({ email, password });
+      if (data.token) setBearerToken(data.token);
       saveUser(data);
       toast.success(`Welcome back, ${data.name}!`);
       return true;
@@ -90,6 +111,7 @@ export function AuthProvider({ children }) {
   };
 
   const logout = async () => {
+    clearBearerToken();
     try {
       await logoutUser();
     } catch (_) {
@@ -103,6 +125,7 @@ export function AuthProvider({ children }) {
     setLoading(true);
     try {
       const { data: updated } = await updateProfile(data);
+      if (updated.token) setBearerToken(updated.token);
       saveUser(updated);
       toast.success('Profile updated!');
       return true;

@@ -1,5 +1,18 @@
 import axios from 'axios';
 
+/** When the API is on another origin, HttpOnly cookies may not attach; Bearer backs up auth (tab‑scoped). */
+export const MINIS_BEARER_KEY = 'minis_bearer';
+
+export function setBearerToken(token) {
+  if (typeof window === 'undefined') return;
+  if (token) sessionStorage.setItem(MINIS_BEARER_KEY, token);
+  else sessionStorage.removeItem(MINIS_BEARER_KEY);
+}
+
+export function clearBearerToken() {
+  setBearerToken('');
+}
+
 // Backend serves `/api/...` (canonical). Same routers are also mounted at `/...` for backwards compatibility.
 // With empty env in dev, use `/api` so Vite proxy forwards to the Express server.
 const raw = (import.meta.env.VITE_API_URL || '').trim().replace(/\/+$/, '');
@@ -15,6 +28,14 @@ const baseURL =
 const API = axios.create({
   baseURL,
   withCredentials: true,
+});
+
+API.interceptors.request.use((config) => {
+  if (typeof window !== 'undefined') {
+    const t = sessionStorage.getItem(MINIS_BEARER_KEY);
+    if (t) config.headers.Authorization = `Bearer ${t}`;
+  }
+  return config;
 });
 
 // Products
