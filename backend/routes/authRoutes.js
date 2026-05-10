@@ -40,27 +40,38 @@ function apiPublicBase() {
 }
 
 /**
- * New signups: store plain verificationToken (1h), email a backend link GET /api/auth/verify/:token.
+ * New signups: verification link GET /api/auth/verify/:token + 6-digit EmailVerifyOtp for /verify-email-otp.
  */
 async function issueEmailVerificationViaGmail(userDoc, emailNorm) {
   const token = crypto.randomBytes(32).toString('hex');
+  const otpExpiresAt = new Date(Date.now() + emailOtpExpiryMs());
   userDoc.verificationToken = token;
-  userDoc.verificationTokenExpires = new Date(Date.now() + 60 * 60 * 1000);
+  userDoc.verificationTokenExpires = otpExpiresAt;
   userDoc.verificationTokenHash = undefined;
   await userDoc.save();
 
-  await EmailVerifyOtp.deleteOne({ email: emailNorm }).catch(() => {});
+  const otpPlain = generateSmsOtp();
+  const otpHash = await hashOtp(otpPlain);
+  await EmailVerifyOtp.findOneAndUpdate(
+    { email: emailNorm },
+    { email: emailNorm, otpHash, expires: otpExpiresAt },
+    { upsert: true, new: true, setDefaultsOnInsert: true },
+  );
 
   const verifyUrl = `${apiPublicBase()}/api/auth/verify/${token}`;
+  const feBase = frontendBaseUrl();
+  const enterCodeUrl = `${feBase}/verify-email?email=${encodeURIComponent(emailNorm)}`;
   const subject = 'Verify Your Email';
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 480px;">
       <h2 style="margin-bottom:12px;">Verify your email</h2>
-      <p>Thanks for signing up. Confirm your address with the button below (valid for 1 hour).</p>
+      <p>Thanks for signing up. Use the <strong>6-digit code</strong> below or the button (same expiry).</p>
+      <p style="font-size:1.75rem;font-weight:700;letter-spacing:0.25em;margin:16px 0;">${otpPlain}</p>
       <p style="margin:24px 0;">
         <a href="${verifyUrl}" style="background:#111827;color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:600;">Verify email</a>
       </p>
-      <p style="font-size:12px;color:#666;">If the button does not work, open this link:<br/><span style="word-break:break-all;">${verifyUrl}</span></p>
+      <p style="font-size:13px;color:#444;">Or open the site and enter the code: <a href="${enterCodeUrl}">${enterCodeUrl}</a></p>
+      <p style="font-size:12px;color:#666;">If the button does not work, copy this link:<br/><span style="word-break:break-all;">${verifyUrl}</span></p>
       <p style="font-size:12px;color:#999;">If you did not create this account, ignore this message.</p>
     </div>
   `.trim();
