@@ -5,7 +5,12 @@ import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 
-// ✅ FIX: Move Field OUTSIDE component
+const NAME_RE = /^[A-Za-z\s]+$/;
+/** Match backend shipping checks */
+const STREET_RE = /^[a-zA-Z0-9\s,.'#\-\/()]+$/;
+const CITY_RE = /^[a-zA-Z\s\-'.]+$/;
+const COUNTRY_RE = /^[a-zA-Z\s,\.-]+$/;
+
 const Field = ({
   label,
   name,
@@ -13,6 +18,7 @@ const Field = ({
   onChange,
   type = "text",
   required = true,
+  error,
   ...rest
 }) => (
   <div>
@@ -28,8 +34,70 @@ const Field = ({
       className="input-field"
       {...rest}
     />
+    {error ? (
+      <p className="text-red-600 text-xs mt-1">{error}</p>
+    ) : null}
   </div>
 );
+
+const emptyErrors = () => ({
+  fullName: "",
+  phone: "",
+  address: "",
+  city: "",
+  postalCode: "",
+  country: "",
+});
+
+function validateCheckoutForm(form) {
+  const errors = emptyErrors();
+
+  const name = form.fullName.trim();
+  if (!name) errors.fullName = "Full name is required";
+  else if (!NAME_RE.test(name))
+    errors.fullName = "Name may only contain letters and spaces";
+
+  const phone = form.phone.trim();
+  if (!phone) errors.phone = "Phone number is required";
+  else if (!/^[0-9]+$/.test(phone))
+    errors.phone = "Phone must contain only numbers";
+
+  const street = form.address.trim();
+  if (!street) errors.address = "Street address is required";
+  else if (/[\r\n]/.test(street)) errors.address = "Street address must be a single line";
+  else if (street.length < 5) errors.address = "Street address is too short (at least 5 characters)";
+  else if (street.length > 180) errors.address = "Street address is too long";
+  else if (!STREET_RE.test(street))
+    errors.address = "Use letters, numbers, spaces, or , . ' # - / ( ) only";
+
+  const city = form.city.trim();
+  if (!city) errors.city = "City is required";
+  else if (/[\r\n]/.test(city)) errors.city = "City must be a single line";
+  else if (city.length < 2 || city.length > 80) errors.city = "City must be 2–80 characters";
+  else if (!CITY_RE.test(city))
+    errors.city = "City may only contain letters, spaces, hyphens or apostrophes";
+
+  const postalNorm = form.postalCode.trim().toUpperCase().replace(/\s+/g, " ");
+  if (!postalNorm) errors.postalCode = "Postal code is required";
+  else if (/[\r\n]/.test(postalNorm)) errors.postalCode = "Postal code must be a single line";
+  else if (/[^A-Z0-9\s\-]/.test(postalNorm))
+    errors.postalCode =
+      "Postal code may only contain letters, numbers, spaces or hyphens";
+  else if (postalNorm.length > 15) errors.postalCode = "Postal code is too long";
+  else if (postalNorm.replace(/[\s-]/g, "").length < 3)
+    errors.postalCode = "Postal code must have at least 3 letters or digits";
+
+  const country = form.country.trim();
+  if (!country) errors.country = "Country is required";
+  else if (/[\r\n]/.test(country)) errors.country = "Country must be a single line";
+  else if (country.length < 2 || country.length > 80)
+    errors.country = "Country must be 2–80 characters";
+  else if (!COUNTRY_RE.test(country))
+    errors.country =
+      "Country may only contain letters, spaces, commas, hyphens or periods";
+
+  return errors;
+}
 
 export default function CheckoutPage() {
   const { cartItems, cartTotal, clearCart } = useCart();
@@ -37,6 +105,7 @@ export default function CheckoutPage() {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState(emptyErrors);
 
   const [form, setForm] = useState({
     fullName: user?.name || "",
@@ -53,12 +122,48 @@ export default function CheckoutPage() {
   const tax = Math.round(cartTotal * 0.05);
   const total = cartTotal + shipping + tax;
 
-  const handleChange = (e) =>
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === "fullName") {
+      setForm((f) => ({ ...f, [name]: value.replace(/[^A-Za-z\s]/g, "") }));
+    } else if (name === "phone") {
+      setForm((f) => ({ ...f, [name]: value.replace(/\D/g, "") }));
+    } else if (name === "address") {
+      setForm((f) => ({
+        ...f,
+        address: value.replace(/[^a-zA-Z0-9\s,.'#\-\/()]/g, "").slice(0, 180),
+      }));
+    } else if (name === "city") {
+      setForm((f) => ({
+        ...f,
+        city: value.replace(/[^a-zA-Z\s\-'.]/g, "").slice(0, 80),
+      }));
+    } else if (name === "postalCode") {
+      setForm((f) => ({
+        ...f,
+        postalCode: value.replace(/[^a-zA-Z0-9\s\-]/g, "").toUpperCase().slice(0, 15),
+      }));
+    } else if (name === "country") {
+      setForm((f) => ({
+        ...f,
+        country: value.replace(/[^a-zA-Z\s,\.-]/g, "").slice(0, 80),
+      }));
+    } else {
+      setForm((f) => ({ ...f, [name]: value }));
+    }
+    if (errors[name]) setErrors((er) => ({ ...er, [name]: "" }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (cartItems.length === 0) return toast.error("Cart is empty");
+
+    const validation = validateCheckoutForm(form);
+    setErrors(validation);
+    if (Object.values(validation).some(Boolean)) {
+      toast.error("Please fix the errors in shipping details.");
+      return;
+    }
 
     setLoading(true);
 
@@ -74,12 +179,12 @@ export default function CheckoutPage() {
           quantity: i.qty,
         })),
         shippingAddress: {
-          fullName: form.fullName,
-          address: form.address,
-          city: form.city,
-          postalCode: form.postalCode,
-          country: form.country,
-          phone: form.phone,
+          fullName: form.fullName.trim(),
+          address: form.address.trim(),
+          city: form.city.trim(),
+          postalCode: form.postalCode.trim().toUpperCase().replace(/\s+/g, " "),
+          country: form.country.trim(),
+          phone: form.phone.trim(),
         },
         paymentMethod: form.paymentMethod,
         itemsPrice: cartTotal,
@@ -95,6 +200,15 @@ export default function CheckoutPage() {
       toast.success("Order placed successfully! 🎉");
       navigate(`/orders/${data._id}`);
     } catch (err) {
+      const serverErrors = err.response?.data?.errors;
+      if (serverErrors && typeof serverErrors === "object") {
+        setErrors((prev) => ({
+          ...prev,
+          ...Object.fromEntries(
+            Object.entries(serverErrors).map(([k, v]) => [k, String(v)]),
+          ),
+        }));
+      }
       toast.error(err.response?.data?.message || "Order failed");
     } finally {
       setLoading(false);
@@ -119,19 +233,26 @@ export default function CheckoutPage() {
                   name="fullName"
                   value={form.fullName}
                   onChange={handleChange}
+                  autoComplete="name"
+                  error={errors.fullName}
                 />
                 <Field
                   label="Phone Number"
                   name="phone"
                   type="tel"
+                  inputMode="numeric"
+                  autoComplete="tel"
+                  placeholder="digits only"
                   value={form.phone}
                   onChange={handleChange}
+                  error={errors.phone}
                 />
                 <Field
                   label="Street Address"
                   name="address"
                   value={form.address}
                   onChange={handleChange}
+                  error={errors.address}
                 />
 
                 <div className="grid grid-cols-2 gap-4">
@@ -140,12 +261,14 @@ export default function CheckoutPage() {
                     name="city"
                     value={form.city}
                     onChange={handleChange}
+                    error={errors.city}
                   />
                   <Field
                     label="Postal Code"
                     name="postalCode"
                     value={form.postalCode}
                     onChange={handleChange}
+                    error={errors.postalCode}
                   />
                 </div>
 
@@ -154,6 +277,7 @@ export default function CheckoutPage() {
                   name="country"
                   value={form.country}
                   onChange={handleChange}
+                  error={errors.country}
                 />
               </div>
             </div>
