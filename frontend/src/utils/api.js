@@ -48,6 +48,9 @@ export const addReview = (id, data) => API.post(`/products/${id}/reviews`, data)
 export const loginUser = (data) => API.post('/auth/login', data);
 export const logoutUser = () => API.post('/auth/logout');
 export const registerUser = (data) => API.post('/auth/register', data);
+export const getRegisterOptions = () => API.get('/auth/register-options');
+export const sendRegisterPhoneCode = (data) =>
+  API.post('/auth/register/send-phone-code', data);
 export const verifyEmail = (params) =>
   API.get('/auth/verify-email', { params });
 export const getProfile = () => API.get('/auth/profile');

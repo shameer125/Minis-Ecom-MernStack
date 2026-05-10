@@ -1,20 +1,32 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getRegisterOptions, sendRegisterPhoneCode } from '../utils/api';
+import { validateShopEmailClient } from '../utils/validateShopEmail';
+import toast from 'react-hot-toast';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
 
-const initialErrors = () => ({ name: '', email: '', password: '', phone: '' });
+const initialErrors = () => ({
+  name: '',
+  email: '',
+  password: '',
+  phone: '',
+  phoneOtp: '',
+});
 
-function validateFrontend({ name, email, password, phone }) {
+function validateFrontend(
+  { name, email, password, phone, phoneOtp },
+  { phoneVerificationRequired },
+) {
   const errors = initialErrors();
 
   const n = name.trim();
   if (!n) errors.name = 'Name is required';
-  else if (!/^[A-Za-z\s]+$/.test(n)) errors.name = 'Name may only contain letters and spaces';
+  else if (!/^[A-Za-z\s]+$/.test(n))
+    errors.name = 'Name may only contain letters and spaces';
 
-  const em = email.trim().toLowerCase();
-  if (!em) errors.email = 'Email is required';
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) errors.email = 'Enter a valid email address';
+  const ev = validateShopEmailClient(email);
+  if (!ev.ok) errors.email = ev.message;
 
   if (!password) errors.password = 'Password is required';
   else if (password.length < 8) errors.password = 'Password must be at least 8 characters';
@@ -22,38 +34,107 @@ function validateFrontend({ name, email, password, phone }) {
   const ph = phone.trim();
   if (!ph) errors.phone = 'Phone is required';
   else if (!/^[0-9]+$/.test(ph)) errors.phone = 'Phone must contain only numbers';
+  else if (ph.length < 10) errors.phone = 'Enter a complete phone number (at least 10 digits)';
+
+  if (phoneVerificationRequired) {
+    const code = phoneOtp.trim();
+    if (!/^[0-9]{6}$/.test(code)) {
+      errors.phoneOtp = 'Enter the 6-digit code sent to your phone';
+    }
+  }
 
   return errors;
 }
 
 export default function RegisterPage() {
-  const [form, setForm] = useState({ name: '', email: '', password: '', phone: '' });
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+    phone: '',
+    phoneOtp: '',
+  });
   const [errors, setErrors] = useState(initialErrors());
   const [showPw, setShowPw] = useState(false);
+  const [phoneVerificationRequired, setPhoneVerificationRequired] = useState(false);
+  const [smsCooldownSec, setSmsCooldownSec] = useState(55);
+  const [resendSecs, setResendSecs] = useState(0);
+  const [sendingCode, setSendingCode] = useState(false);
   const { register, loading } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirect = searchParams.get('redirect') || '/';
 
+  useEffect(() => {
+    let alive = true;
+    getRegisterOptions()
+      .then(({ data }) => {
+        if (!alive || !data) return;
+        setPhoneVerificationRequired(Boolean(data.phoneVerificationRequired));
+        const c = Number(data.smsResendCooldownSeconds);
+        setSmsCooldownSec(Number.isFinite(c) && c > 0 ? c : 55);
+      })
+      .catch(() => {
+        /* optional; behaves as email-only signup */
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (resendSecs <= 0) return undefined;
+    const t = window.setTimeout(() => setResendSecs((s) => Math.max(0, s - 1)), 1000);
+    return () => window.clearTimeout(t);
+  }, [resendSecs]);
+
+  const handleSendCode = async () => {
+    const ph = form.phone.trim();
+    if (!/^[0-9]+$/.test(ph) || ph.length < 10) {
+      setErrors((e) => ({ ...e, phone: 'Enter a complete phone number (at least 10 digits)' }));
+      toast.error('Enter a valid phone number before requesting a code');
+      return;
+    }
+    setSendingCode(true);
+    try {
+      await sendRegisterPhoneCode({ phone: ph });
+      toast.success('Code sent — check your phone');
+      setResendSecs(smsCooldownSec);
+    } catch (err) {
+      const status = err.response?.status;
+      const msg =
+        status === 429
+          ? 'Please wait before requesting another code'
+          : err.response?.data?.message || 'Could not send SMS';
+      toast.error(msg);
+      if (status === 429) setResendSecs(smsCooldownSec);
+    } finally {
+      setSendingCode(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const nextErrors = validateFrontend(form);
+    const nextErrors = validateFrontend(form, { phoneVerificationRequired });
     setErrors(nextErrors);
     if (Object.values(nextErrors).some(Boolean)) return;
 
-    const result = await register(
-      form.name.trim(),
-      form.email.trim(),
-      form.password,
-      form.phone.trim(),
-    );
+    const result = await register({
+      name: form.name.trim(),
+      email: form.email.trim(),
+      password: form.password,
+      phone: form.phone.trim(),
+      ...(phoneVerificationRequired ? { phoneOtp: form.phoneOtp.trim() } : {}),
+    });
     if (!result.ok) {
-      if (result.errors)
-        setErrors((prev) => ({ ...prev, ...result.errors }));
+      if (result.errors) setErrors((prev) => ({ ...prev, ...result.errors }));
       return;
     }
     navigate(`/login${redirect !== '/' ? `?redirect=${encodeURIComponent(redirect)}` : ''}`);
   };
+
+  const canSendCode =
+    !sendingCode && resendSecs <= 0 && /^[0-9]+$/.test(form.phone.trim()) && form.phone.trim().length >= 10;
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center
@@ -95,12 +176,55 @@ export default function RegisterPage() {
               inputMode="numeric"
               autoComplete="tel"
               value={form.phone}
-              onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value.replace(/\D/g, '') }))}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  phone: e.target.value.replace(/\D/g, ''),
+                  phoneOtp: '',
+                }))
+              }
               className="input-field"
-              placeholder="digits only"
+              placeholder="digits only — we may text you a signup code"
             />
             {errors.phone && <p className="text-red-600 text-xs mt-1">{errors.phone}</p>}
           </div>
+          {phoneVerificationRequired && (
+            <>
+              <button
+                type="button"
+                disabled={!canSendCode}
+                onClick={handleSendCode}
+                className="btn-dark w-full disabled:opacity-50 text-sm py-2.5"
+              >
+                {sendingCode
+                  ? 'Sending…'
+                  : resendSecs > 0
+                    ? `Resend code in ${resendSecs}s`
+                    : 'Send SMS code'}
+              </button>
+              <div>
+                <label className="block text-sm font-medium mb-1">SMS verification code</label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  value={form.phoneOtp}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, phoneOtp: e.target.value.replace(/\D/g, '') }))
+                  }
+                  className="input-field tracking-widest"
+                  placeholder="6-digit code"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Request a code, then enter it here. You also need to verify your email link before signing in.
+                </p>
+                {errors.phoneOtp && (
+                  <p className="text-red-600 text-xs mt-1">{errors.phoneOtp}</p>
+                )}
+              </div>
+            </>
+          )}
           <div>
             <label className="block text-sm font-medium mb-1">Password</label>
             <div className="relative">
@@ -129,7 +253,9 @@ export default function RegisterPage() {
         </form>
         <p className="text-center text-sm text-gray-500 mt-6">
           Already have an account?{' '}
-          <Link to="/login" className="text-primary-600 font-medium hover:underline">Sign in</Link>
+          <Link to="/login" className="text-primary-600 font-medium hover:underline">
+            Sign in
+          </Link>
         </p>
       </div>
     </div>

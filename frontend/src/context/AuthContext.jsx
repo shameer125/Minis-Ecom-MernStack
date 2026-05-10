@@ -91,10 +91,20 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const register = async (name, email, password, phone) => {
+  const register = async ({ name, email, password, phone, phoneOtp }) => {
+    const body = {
+      name,
+      email,
+      password,
+      phone,
+      ...(phoneOtp != null && String(phoneOtp).trim()
+        ? { phoneOtp: String(phoneOtp).trim() }
+        : {}),
+    };
+
     setLoading(true);
     try {
-      const { data } = await registerUser({ name, email, password, phone });
+      const { data } = await registerUser(body);
       toast.success(data.message || 'Check your email to verify your account.');
       return { ok: true };
     } catch (err) {
