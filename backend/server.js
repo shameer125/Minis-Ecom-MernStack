@@ -49,24 +49,7 @@ const { emailConfigured } = require('./utils/sendVerificationEmail');
 const { smsSignupConfigured } = require('./utils/registerSms');
 
 /** Bump when behavior Replit-users care about changes (see GET /api/health). */
-const MINIS_API_BUILD = 'register-mail-2026-05-10';
-
-// Mounted on app first so these paths cannot be lost vs whatever old auth router shipped on Replit.
-app.get('/api/deploy-check', (_, res) =>
-  res.json({ ok: true, apiBuild: MINIS_API_BUILD }),
-);
-app.get('/api/mail/register-options', registerOptionsHandler);
-app.get('/api/auth/register-options', registerOptionsHandler);
-app.get('/api/auth/register/options', registerOptionsHandler);
-
-if (typeof authRoutes.resendVerificationHandler === 'function') {
-  app.post('/api/mail/resend', authRoutes.resendVerificationHandler);
-  ['/resend-email-verification', '/resend-verification', '/resend'].forEach((p) => {
-    app.post(`/api/auth${p}`, authRoutes.resendVerificationHandler);
-  });
-} else {
-  console.warn('[MINIS] authRoutes missing resendVerificationHandler — redeploy backend/routes/authRoutes.js');
-}
+const MINIS_API_BUILD = 'register-mail-2026-05-11';
 
 /**
  * Single router tree mounted twice:
@@ -76,12 +59,8 @@ if (typeof authRoutes.resendVerificationHandler === 'function') {
  * This avoids mutating req.url (unreliable on some hosts / proxies).
  */
 const api = express.Router();
-api.use('/auth', authRoutes);
-api.use('/products', productRoutes);
-api.use('/orders', orderRoutes);
-api.use('/cart', cartRoutes);
-api.use('/contact', contactRoutes);
-api.use('/admin', adminRoutes);
+
+// Public paths must be registered BEFORE `api.use('/auth', …)` so they win over a stale/partial auth router on Replit.
 api.get('/health', (req, res) =>
   res.json({
     status: 'OK',
@@ -89,6 +68,29 @@ api.get('/health', (req, res) =>
     apiBuild: MINIS_API_BUILD,
   }),
 );
+api.get('/deploy-check', (_, res) =>
+  res.json({ ok: true, apiBuild: MINIS_API_BUILD }),
+);
+api.get('/mail/register-options', registerOptionsHandler);
+api.get('/auth/register-options', registerOptionsHandler);
+api.get('/auth/register/options', registerOptionsHandler);
+
+if (typeof authRoutes.resendVerificationHandler === 'function') {
+  const resend = authRoutes.resendVerificationHandler;
+  api.post('/mail/resend', resend);
+  ['/resend-email-verification', '/resend-verification', '/resend'].forEach((p) => {
+    api.post(`/auth${p}`, resend);
+  });
+} else {
+  console.warn('[MINIS] authRoutes missing resendVerificationHandler — redeploy backend/routes/authRoutes.js');
+}
+
+api.use('/auth', authRoutes);
+api.use('/products', productRoutes);
+api.use('/orders', orderRoutes);
+api.use('/cart', cartRoutes);
+api.use('/contact', contactRoutes);
+api.use('/admin', adminRoutes);
 
 app.get('/', (req, res) => {
   res.send("MINIS API is running...");
@@ -143,4 +145,8 @@ if (!smsSignupConfigured()) {
   );
 }
 
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () =>
+  console.log(
+    `🚀 Server running on port ${PORT} [MINIS_API_BUILD=${MINIS_API_BUILD}] — expect apiBuild field on GET /api/health`,
+  ),
+);
