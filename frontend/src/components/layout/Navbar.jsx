@@ -37,7 +37,7 @@ export default function Navbar() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { cartCount } = useCart();
   const { wishlist } = useWishlist();
-  const { user, logout } = useAuth();
+  const { user, logout, sessionChecked } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -124,7 +124,11 @@ export default function Navbar() {
               <button onClick={() => setUserMenuOpen(!userMenuOpen)} className="p-2 hover:text-primary-600 transition-colors"><FiUser size={20} /></button>
               {userMenuOpen && (
                 <div className="absolute right-0 top-full mt-2 w-48 bg-white shadow-xl border border-gray-100 z-50 py-1">
-                  {user ? (
+                  {!sessionChecked ? (
+                    <div className="px-4 py-6 flex justify-center" aria-busy="true">
+                      <div className="w-8 h-8 border-2 border-gray-200 border-t-primary-600 rounded-full animate-spin" />
+                    </div>
+                  ) : user ? (
                     <>
                       <div className="px-4 py-3 border-b border-gray-100">
                         <p className="text-xs text-gray-400">Signed in as</p>
@@ -195,7 +199,11 @@ export default function Navbar() {
           <Link to="/contact" className="block px-6 py-3.5 font-medium border-b border-gray-50 uppercase text-sm tracking-wider">Contact</Link>
           <Link to="/faq" className="block px-6 py-3.5 font-medium border-b border-gray-50 uppercase text-sm tracking-wider">FAQ</Link>
           <div className="px-6 py-4 space-y-1 border-t">
-            {user ? (
+            {!sessionChecked ? (
+              <div className="py-4 flex justify-center" aria-busy="true">
+                <div className="w-7 h-7 border-2 border-gray-200 border-t-primary-600 rounded-full animate-spin" />
+              </div>
+            ) : user ? (
               <>
                 {user.isAdmin && <Link to="/admin" className="block py-2 text-sm font-semibold text-primary-600">⚙ Admin Dashboard</Link>}
                 <Link to="/profile" className="block py-2 text-sm">My Profile</Link>

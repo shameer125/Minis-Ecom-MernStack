@@ -1,19 +1,59 @@
-import { createContext, useContext, useState } from 'react';
-import { loginUser, registerUser, updateProfile } from '../utils/api';
+import { createContext, useContext, useEffect, useState } from 'react';
+import {
+  loginUser,
+  registerUser,
+  updateProfile,
+  logoutUser,
+  getProfile,
+} from '../utils/api';
 import toast from 'react-hot-toast';
 
 const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
+const LS_KEY = 'minis_user';
+
+/** Persist display fields only; JWT stays in HttpOnly cookie. Strip legacy tokens. */
+function sanitizeStoredUser(u) {
+  if (!u || typeof u !== 'object') return null;
+  const { token: _discard, password: _p, ...safe } = u;
+  return safe;
+}
+
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('minis_user') || 'null'));
+  const [user, setUser] = useState(() =>
+    sanitizeStoredUser(JSON.parse(localStorage.getItem(LS_KEY) || 'null')),
+  );
   const [loading, setLoading] = useState(false);
+  const [sessionChecked, setSessionChecked] = useState(false);
 
   const saveUser = (userData) => {
-    setUser(userData);
-    localStorage.setItem('minis_user', JSON.stringify(userData));
+    const safe = sanitizeStoredUser(userData);
+    setUser(safe);
+    if (safe) localStorage.setItem(LS_KEY, JSON.stringify(safe));
+    else localStorage.removeItem(LS_KEY);
   };
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await getProfile();
+        if (!cancelled) saveUser(data);
+      } catch {
+        if (!cancelled) {
+          setUser(null);
+          localStorage.removeItem(LS_KEY);
+        }
+      } finally {
+        if (!cancelled) setSessionChecked(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const login = async (email, password) => {
     setLoading(true);
@@ -49,9 +89,13 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('minis_user');
+  const logout = async () => {
+    try {
+      await logoutUser();
+    } catch (_) {
+      // Cookie may already be cleared; finish local teardown anyway.
+    }
+    saveUser(null);
     toast.success('Logged out successfully');
   };
 
@@ -71,7 +115,9 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, updateUser }}>
+    <AuthContext.Provider
+      value={{ user, loading, sessionChecked, login, register, logout, updateUser }}
+    >
       {children}
     </AuthContext.Provider>
   );

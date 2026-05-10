@@ -14,12 +14,7 @@ const baseURL =
 
 const API = axios.create({
   baseURL,
-});
-
-API.interceptors.request.use((config) => {
-  const user = JSON.parse(localStorage.getItem('minis_user') || 'null');
-  if (user?.token) config.headers.Authorization = `Bearer ${user.token}`;
-  return config;
+  withCredentials: true,
 });
 
 // Products
@@ -30,6 +25,7 @@ export const addReview = (id, data) => API.post(`/products/${id}/reviews`, data)
 
 // Auth
 export const loginUser = (data) => API.post('/auth/login', data);
+export const logoutUser = () => API.post('/auth/logout');
 export const registerUser = (data) => API.post('/auth/register', data);
 export const verifyEmail = (params) =>
   API.get('/auth/verify-email', { params });

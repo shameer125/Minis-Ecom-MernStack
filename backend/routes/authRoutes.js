@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const router = express.Router();
 const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
-const { protect, generateToken } = require('../middleware/auth');
+const { protect, generateToken, setAuthCookie, clearAuthCookie } = require('../middleware/auth');
 const { sendVerificationEmail } = require('../utils/sendVerificationEmail');
 
 const NAME_RE = /^[A-Za-z\s]+$/;
@@ -136,15 +136,22 @@ router.post('/login', asyncHandler(async (req, res) => {
     });
   }
 
+  const jwt = generateToken(user._id);
+  setAuthCookie(res, jwt);
   res.json({
     _id: user._id,
     name: user.name,
     email: user.email,
     isAdmin: user.isAdmin,
     isVerified: user.isVerified,
-    token: generateToken(user._id),
   });
 }));
+
+// POST /api/auth/logout — clears HttpOnly auth cookie (no JWT required).
+router.post('/logout', (req, res) => {
+  clearAuthCookie(res);
+  res.json({ message: 'Logged out' });
+});
 
 // GET /api/auth/profile
 router.get('/profile', protect, asyncHandler(async (req, res) => {
@@ -163,13 +170,14 @@ router.put('/profile', protect, asyncHandler(async (req, res) => {
   if (req.body.password) user.password = req.body.password;
 
   const updated = await user.save();
+  const jwt = generateToken(updated._id);
+  setAuthCookie(res, jwt);
   res.json({
     _id: updated._id,
     name: updated.name,
     email: updated.email,
     isAdmin: updated.isAdmin,
     isVerified: updated.isVerified,
-    token: generateToken(updated._id),
   });
 }));
 

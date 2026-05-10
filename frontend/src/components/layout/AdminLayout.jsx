@@ -16,7 +16,10 @@ const navLinks = [
 export default function AdminLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const handleLogout = () => { logout(); navigate('/login'); };
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ fontFamily: "'DM Sans', sans-serif", background: '#f8f8fb' }}>
