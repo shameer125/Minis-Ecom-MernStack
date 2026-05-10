@@ -14,27 +14,47 @@ function getTransport() {
 }
 
 /**
- * Sends the verification email. If SMTP env is missing, logs the URL (local dev fallback).
+ * Sign-up verification: numeric OTP plus optional magic link fallback.
+ * If SMTP env is missing, logs OTP and URL for local development.
  */
-async function sendVerificationEmail({ to, verifyUrl }) {
+async function sendSignupVerificationEmail({ to, otpCode, verifyUrl, otpExpiresMinutes }) {
   const transport = getTransport();
   const from =
     process.env.EMAIL_FROM || process.env.EMAIL_USER || 'MINIS <noreply@minis>';
 
+  const mDisp =
+    otpExpiresMinutes != null && Number.isFinite(Number(otpExpiresMinutes))
+      ? Number(otpExpiresMinutes)
+      : 60;
+  const minWord = mDisp === 1 ? 'minute' : 'minutes';
+
   const subject = 'Verify your MINIS email';
-  const text = `Verify your MINIS account by opening this link:\n${verifyUrl}`;
+  const text = [
+    `Your MINIS email verification code is: ${otpCode}`,
+    `(Expires in ${mDisp} ${minWord}.)`,
+    '',
+    'Or open this link in your browser:',
+    verifyUrl,
+    '',
+    `If you did not create an account, ignore this message.`,
+  ].join('\n');
+
   const html = `
     <p>Thanks for registering with MINIS.</p>
-    <p><a href="${verifyUrl}">Click here to verify your email address</a></p>
+    <p style="font-size:1.25rem;font-weight:600;letter-spacing:0.2em;">${otpCode}</p>
+    <p>Enter this code on the verification page (expires in <strong>${mDisp}</strong> ${minWord}).</p>
+    <p>Or verify in one tap: <a href="${verifyUrl}">confirm your email address</a></p>
     <p>If you did not create an account, you can ignore this message.</p>
   `.trim();
 
   if (!transport) {
-    console.warn('[email] SMTP not configured; verification link (dev):', verifyUrl);
+    console.warn(
+      `[email] SMTP not configured — dev verification for ${to}: code=${otpCode} URL=${verifyUrl}`,
+    );
     return;
   }
 
   await transport.sendMail({ from, to, subject, text, html });
 }
 
-module.exports = { sendVerificationEmail };
+module.exports = { sendSignupVerificationEmail };

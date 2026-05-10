@@ -5,9 +5,11 @@ const router = express.Router();
 const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
 const SmsRegisterOtp = require('../models/SmsRegisterOtp');
+const EmailVerifyOtp = require('../models/EmailVerifyOtp');
 const { protect, generateToken, setAuthCookie, clearAuthCookie } = require('../middleware/auth');
-const { sendVerificationEmail } = require('../utils/sendVerificationEmail');
+const { sendSignupVerificationEmail } = require('../utils/sendVerificationEmail');
 const { validateShoppingEmail } = require('../utils/emailValidation');
+const { emailOtpCooldownMs, emailOtpExpiryMs } = require('../utils/emailOtpTimers');
 const {
   smsSignupConfigured,
   normalizeForSmsE164Digits,
@@ -24,6 +26,49 @@ const PHONE_RE = /^[0-9]+$/;
 function smsCooldownMs() {
   const n = Number(process.env.SMS_RESEND_SECONDS);
   return Number.isFinite(n) && n >= 30 ? n * 1000 : 55_000;
+}
+
+function frontendBaseUrl() {
+  return (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/+$/, '');
+}
+
+function buildVerifyUrl(emailNorm, rawToken) {
+  const fe = frontendBaseUrl();
+  return `${fe}/verify-email?token=${encodeURIComponent(rawToken)}&email=${encodeURIComponent(emailNorm)}`;
+}
+
+/**
+ * Stores link token + hashed email OTP on the user/email row and sends combined email.
+ * @param {import('mongoose').Document & { verificationTokenHash?: string, verificationTokenExpires?: Date }} userDoc
+ */
+async function persistVerificationArtifactsAndMail(userDoc, emailNorm) {
+  const rawToken = crypto.randomBytes(32).toString('hex');
+  const verificationTokenHash = await bcrypt.hash(rawToken, 12);
+  const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+  userDoc.verificationTokenHash = verificationTokenHash;
+  userDoc.verificationTokenExpires = verificationTokenExpires;
+  await userDoc.save();
+
+  const emailOtpPlain = generateSmsOtp();
+  const emailOtpHash = await hashOtp(emailOtpPlain);
+  const otpExpiresAt = new Date(Date.now() + emailOtpExpiryMs());
+
+  await EmailVerifyOtp.findOneAndUpdate(
+    { email: emailNorm },
+    { email: emailNorm, otpHash: emailOtpHash, expires: otpExpiresAt },
+    { upsert: true, new: true, setDefaultsOnInsert: true },
+  );
+
+  const verifyUrl = buildVerifyUrl(emailNorm, rawToken);
+  const otpExpiresMinutes = Math.max(5, Math.round(emailOtpExpiryMs() / 60000));
+
+  await sendSignupVerificationEmail({
+    to: emailNorm,
+    otpCode: emailOtpPlain,
+    verifyUrl,
+    otpExpiresMinutes,
+  });
 }
 
 function validateRegistrationBody({ name, email, password, phone, phoneOtp }, opts = {}) {
@@ -70,6 +115,7 @@ router.get('/register-options', (req, res) => {
   res.json({
     phoneVerificationRequired: smsSignupConfigured(),
     smsResendCooldownSeconds: Math.round(smsCooldownMs() / 1000),
+    emailOtpResendCooldownSeconds: Math.round(emailOtpCooldownMs() / 1000),
   });
 });
 
@@ -169,21 +215,10 @@ router.post('/register', asyncHandler(async (req, res) => {
 
   if (smsRow) await SmsRegisterOtp.deleteOne({ _id: smsRow._id });
 
-  const rawToken = crypto.randomBytes(32).toString('hex');
-  const verificationTokenHash = await bcrypt.hash(rawToken, 12);
-  const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
-
-  user.verificationTokenHash = verificationTokenHash;
-  user.verificationTokenExpires = verificationTokenExpires;
-  await user.save();
-
-  const frontend =
-    (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/+$/, '');
-  const verifyUrl = `${frontend}/verify-email?token=${encodeURIComponent(rawToken)}&email=${encodeURIComponent(emailNorm)}`;
-
   try {
-    await sendVerificationEmail({ to: emailNorm, verifyUrl });
+    await persistVerificationArtifactsAndMail(user, emailNorm);
   } catch (e) {
+    await EmailVerifyOtp.deleteOne({ email: emailNorm });
     await User.findByIdAndDelete(user._id);
     return res.status(502).json({
       message: 'Could not send verification email. Please try again later.',
@@ -203,8 +238,8 @@ router.post('/register', asyncHandler(async (req, res) => {
 
   res.status(201).json({
     message: requirePhoneOtp
-      ? 'Account created — check SMS and email. Verify your email before signing in.'
-      : 'Account created. Check your email to verify your address before signing in.',
+      ? 'Account created — check SMS and email. Enter your email OTP (or open the link) before signing in.'
+      : 'Account created. Enter the 6-digit code we emailed (or tap the link) before signing in.',
     email: user.email,
   });
 }));
@@ -239,8 +274,81 @@ router.get('/verify-email', asyncHandler(async (req, res) => {
   user.verificationTokenExpires = undefined;
   await user.save();
 
+  await EmailVerifyOtp.deleteOne({ email: emailNorm }).catch(() => {});
+
   res.json({ message: 'Email verified successfully. You can sign in now.' });
 }));
+
+// POST /api/auth/verify-email-otp
+router.post(
+  '/verify-email-otp',
+  asyncHandler(async (req, res) => {
+    const { email, code } = req.body || {};
+    const ev = validateShoppingEmail(email);
+    if (!ev.ok) return res.status(400).json({ message: ev.message });
+
+    const emailNorm = ev.normalized;
+    const otp = typeof code === 'string' ? code.trim() : '';
+    if (!/^[0-9]{6}$/.test(otp)) {
+      return res.status(400).json({
+        message: 'Enter the 6-digit code from your email',
+        errors: { code: 'Code must be 6 digits' },
+      });
+    }
+
+    const row = await EmailVerifyOtp.findOne({ email: emailNorm }).select('+otpHash');
+    if (!row || row.expires.getTime() < Date.now()) {
+      if (row) await EmailVerifyOtp.deleteOne({ _id: row._id });
+      return res.status(400).json({ message: 'Invalid or expired code', errors: { code: 'Request a new code' } });
+    }
+
+    const match = await verifyOtp(otp, row.otpHash);
+    if (!match) return res.status(400).json({ message: 'Invalid code', errors: { code: 'Incorrect code' } });
+
+    const user = await User.findOne({ email: emailNorm }).select('+verificationTokenHash +verificationTokenExpires');
+    if (!user) return res.status(400).json({ message: 'User not found' });
+    if (user.isVerified) {
+      await EmailVerifyOtp.deleteOne({ email: emailNorm });
+      return res.json({ message: 'Email is already verified. You can sign in.' });
+    }
+
+    user.isVerified = true;
+    user.verificationTokenHash = undefined;
+    user.verificationTokenExpires = undefined;
+    await user.save();
+    await EmailVerifyOtp.deleteOne({ email: emailNorm });
+
+    res.json({ message: 'Email verified successfully. You can sign in now.' });
+  }),
+);
+
+// POST /api/auth/resend-email-verification
+router.post(
+  '/resend-email-verification',
+  asyncHandler(async (req, res) => {
+    const raw = req.body?.email;
+    const ev = validateShoppingEmail(raw);
+    if (!ev.ok) return res.status(400).json({ message: ev.message });
+    const emailNorm = ev.normalized;
+
+    const user = await User.findOne({ email: emailNorm }).select('+verificationTokenHash +verificationTokenExpires');
+    if (!user) return res.status(404).json({ message: 'No account found for this email' });
+    if (user.isVerified) return res.status(400).json({ message: 'This email is already verified' });
+
+    const prev = await EmailVerifyOtp.findOne({ email: emailNorm }).select('+otpHash');
+    if (prev?.updatedAt && Date.now() - new Date(prev.updatedAt).getTime() < emailOtpCooldownMs()) {
+      return res.status(429).json({ message: 'Please wait before requesting another email code.' });
+    }
+
+    try {
+      await persistVerificationArtifactsAndMail(user, emailNorm);
+    } catch (e) {
+      return res.status(502).json({ message: 'Could not send email. Please try again later.' });
+    }
+
+    res.json({ message: 'A new verification code was sent to your email.' });
+  }),
+);
 
 // POST /api/auth/login
 router.post('/login', asyncHandler(async (req, res) => {
@@ -251,7 +359,8 @@ router.post('/login', asyncHandler(async (req, res) => {
 
   if (!user.isAdmin && user.isVerified === false) {
     return res.status(403).json({
-      message: 'Please verify your email before signing in. Check your inbox for the verification link.',
+      message:
+        'Please verify your email before signing in. Check your inbox for the 6-digit code or verification link.',
     });
   }
 

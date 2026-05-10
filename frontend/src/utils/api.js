@@ -53,6 +53,9 @@ export const sendRegisterPhoneCode = (data) =>
   API.post('/auth/register/send-phone-code', data);
 export const verifyEmail = (params) =>
   API.get('/auth/verify-email', { params });
+export const verifyEmailOtp = (data) => API.post('/auth/verify-email-otp', data);
+export const resendEmailVerification = (data) =>
+  API.post('/auth/resend-email-verification', data);
 export const getProfile = () => API.get('/auth/profile');
 export const updateProfile = (data) => API.put('/auth/profile', data);
 

@@ -130,7 +130,10 @@ export default function RegisterPage() {
       if (result.errors) setErrors((prev) => ({ ...prev, ...result.errors }));
       return;
     }
-    navigate(`/login${redirect !== '/' ? `?redirect=${encodeURIComponent(redirect)}` : ''}`);
+    const verifyQs = new URLSearchParams();
+    verifyQs.set('email', form.email.trim());
+    if (redirect !== '/') verifyQs.set('redirect', redirect);
+    navigate(`/verify-email?${verifyQs.toString()}`);
   };
 
   const canSendCode =
@@ -168,6 +171,9 @@ export default function RegisterPage() {
               placeholder="you@example.com"
             />
             {errors.email && <p className="text-red-600 text-xs mt-1">{errors.email}</p>}
+            <p className="text-xs text-gray-500 mt-1">
+              After sign-up you’ll receive a <strong className="text-dark font-medium">6-digit email code</strong> and an optional link—not via SMS—plus an SMS signup code only if phone verification is on.
+            </p>
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Phone</label>
@@ -217,7 +223,7 @@ export default function RegisterPage() {
                   placeholder="6-digit code"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Request a code, then enter it here. You also need to verify your email link before signing in.
+                  Request a phone code, enter it above, then complete email verification after sign-up with the emailed 6-digit code (or link).
                 </p>
                 {errors.phoneOtp && (
                   <p className="text-red-600 text-xs mt-1">{errors.phoneOtp}</p>

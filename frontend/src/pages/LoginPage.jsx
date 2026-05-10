@@ -44,9 +44,15 @@ export default function LoginPage() {
           </button>
         </form>
         <p className="text-center text-sm text-gray-500 mt-6">
-          Don't have an account?{' '}
+          Don&apos;t have an account?{' '}
           <Link to={`/register${redirect !== '/' ? `?redirect=${redirect}` : ''}`} className="text-primary-600 font-medium hover:underline">
             Create one
+          </Link>
+        </p>
+        <p className="text-center text-sm text-gray-500 mt-2">
+          Need to verify?{' '}
+          <Link to="/verify-email" className="text-primary-600 font-medium hover:underline">
+            Enter email code
           </Link>
         </p>
       </div>
