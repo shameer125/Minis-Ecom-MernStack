@@ -29,6 +29,28 @@ const API = axios.create({
   withCredentials: true,
 });
 
+async function axiosUntil(optionsFactories, axiosCallable = (...args) => API(...args)) {
+  let lastErr;
+  for (const opts of optionsFactories) {
+    try {
+      const config = typeof opts === 'function' ? opts() : opts;
+      return await axiosCallable(config);
+    } catch (e) {
+      lastErr = e;
+      const st = e.response?.status;
+      const msg = e.response?.data?.message;
+      const isBackend404 =
+        st === 404 &&
+        (typeof msg === 'string'
+          ? msg.includes('Route not found')
+          : typeof msg === 'object' && msg?.message?.includes?.('Route not found'));
+      if (isBackend404) continue;
+      throw e;
+    }
+  }
+  throw lastErr;
+}
+
 API.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const t = sessionStorage.getItem(MINIS_BEARER_KEY);
@@ -47,15 +69,23 @@ export const addReview = (id, data) => API.post(`/products/${id}/reviews`, data)
 export const loginUser = (data) => API.post('/auth/login', data);
 export const logoutUser = () => API.post('/auth/logout');
 export const registerUser = (data) => API.post('/auth/register', data);
-export const getRegisterOptions = () => API.get('/auth/register-options');
+export const getRegisterOptions = () =>
+  axiosUntil([
+    { method: 'get', url: '/auth/register-options' },
+    { method: 'get', url: '/auth/register/options' },
+  ]);
 export const sendRegisterPhoneCode = (data) =>
   API.post('/auth/register/send-phone-code', data);
 export const verifyEmail = (params) =>
   API.get('/auth/verify-email', { params });
 export const verifyEmailOtp = (data) => API.post('/auth/verify-email-otp', data);
 export const resendEmailVerification = (data) =>
-  API.post('/auth/resend-email-verification', data);
-export const resendVerification = (data) => API.post('/auth/resend-verification', data);
+  axiosUntil([
+    { method: 'post', url: '/auth/resend-email-verification', data },
+    { method: 'post', url: '/auth/resend-verification', data },
+    { method: 'post', url: '/auth/resend', data },
+  ]);
+export const resendVerification = resendEmailVerification;
 export const getProfile = () => API.get('/auth/profile');
 export const updateProfile = (data) => API.put('/auth/profile', data);
 

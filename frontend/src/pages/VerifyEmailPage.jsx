@@ -128,14 +128,18 @@ function OtpForm({ emailParam, redirect, cooldownSecDefault }) {
     setSending(true);
     try {
       await resendEmailVerification({ email: trimmed });
-      toast.success('Check your inbox for a new code');
+      toast.success('If mail is configured on the server, check your inbox for a new verification link');
       setResendSecs(cooldownSec);
     } catch (err) {
       const status = err.response?.status;
-      const msg =
+      let msg =
         status === 429
           ? 'Please wait before requesting another email'
           : err.response?.data?.message || 'Could not resend email';
+      if (typeof msg === 'string' && msg.includes('Route not found')) {
+        msg =
+          'Verification “resend” is not on your live API yet. Redeploy the latest backend to Replit from this repo, then set EMAIL_USER + EMAIL_PASS (and API_PUBLIC_URL) in Replit Secrets.';
+      }
       toast.error(msg);
       if (status === 429) setResendSecs(cooldownSec);
     } finally {
@@ -205,10 +209,9 @@ export default function VerifyEmailPage() {
       <div className="w-full max-w-md px-6 text-center">
         <h1 className="font-display text-3xl text-dark mb-4">Verify your email</h1>
         <p className="text-gray-500 text-xs max-w-sm mx-auto">
-          Open the message we sent you: enter the{' '}
-          <strong className="text-dark">6-digit code</strong> below, or use the{' '}
-          <strong className="text-dark">verification link</strong>{' '}
-          in that email. A phone SMS code during sign-up is only for your mobile number.
+          New sign-ups get a verification link in email that opens the MINIS API first, then sends you back to
+          login. If your account was created with the latest server, you usually will not get a 6-digit code—use
+          the link, or tap “Send new verification email” below. Older accounts may still verify with a code field.
         </p>
 
         {incompleteMagicLink && (

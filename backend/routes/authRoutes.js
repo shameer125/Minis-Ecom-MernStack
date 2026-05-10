@@ -143,15 +143,18 @@ router.get(
   }),
 );
 
-// GET /api/auth/register-options
-router.get('/register-options', (req, res) => {
+function registerOptionsHandler(req, res) {
   res.json({
     phoneVerificationRequired: smsSignupConfigured(),
     smsResendCooldownSeconds: Math.round(smsCooldownMs() / 1000),
     emailOtpResendCooldownSeconds: Math.round(emailOtpCooldownMs() / 1000),
     emailDeliveryConfigured: emailConfigured(),
   });
-});
+}
+
+// GET /api/auth/register-options (+ slash alias for brittle proxies/caches)
+router.get('/register-options', registerOptionsHandler);
+router.get('/register/options', registerOptionsHandler);
 
 // POST /api/auth/register/send-phone-code
 router.post(
@@ -389,6 +392,9 @@ router.post('/resend-email-verification', resendVerificationHandler);
 
 // POST /api/auth/resend-verification (alias)
 router.post('/resend-verification', resendVerificationHandler);
+
+// POST /api/auth/resend — short alias
+router.post('/resend', resendVerificationHandler);
 
 // POST /api/auth/login
 router.post('/login', asyncHandler(async (req, res) => {
