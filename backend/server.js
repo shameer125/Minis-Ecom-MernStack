@@ -19,16 +19,18 @@ connectDB();
 const app = express();
 
 const corsOrigins = [
-  'http://localhost:5173',
-  'https://minis-ecom-mern-stack-fxdr.vercel.app',
-  'https://minis-ecom-mern-stack--alishameer251.replit.app',
-  ...(process.env.CORS_ORIGINS || '')
-    .split(',')
+  "http://localhost:5173",
+  "https://minis-ecom-mern-stack-fxdr.vercel.app",
+  "https://minis-ecom-mern-stack--alishameer251.replit.app",
+  ...(process.env.CORS_ORIGINS || "")
+    .split(",")
     .map((o) => o.trim())
     .filter(Boolean),
 ];
 
-app.use(
+
+
+https: app.use(
   cors({
     origin: corsOrigins,
     credentials: true,
